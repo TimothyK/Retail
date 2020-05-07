@@ -2,6 +2,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.Models;
+using Retail.Data.Tests.Extensions;
+using Shouldly;
 using System;
 using System.Linq;
 
@@ -10,38 +12,55 @@ namespace Retail.Data.Tests
     [TestClass]
     public class UnitTest1
     {
-        [TestMethod]
-        public void TestMethod1()
-        {
-            var connectionStringBuilder = new SqlConnectionStringBuilder
-            {
-                DataSource = @"(localdb)\mssqllocaldb",
-                IntegratedSecurity = true,
-                InitialCatalog = "Retail"
-            };
-            var contextBuilder = new DbContextOptionsBuilder<RetailContext>();           ;            
-            contextBuilder
-                .UseSqlServer(connectionStringBuilder.ConnectionString);
+        public static RetailContext _dbRetail;
 
-            var dbRetail = new RetailContext(contextBuilder.Options);
+        [ClassInitialize]
+        public static void ClassSetup(TestContext context)
+        {
+            var localDb = new LocalDbContext(typeof(UnitTest1));
+            
+            localDb.AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
+
+            _dbRetail = new RetailContext(localDb.GetDbConnectionOptions<RetailContext>());
+        }
+
+        [ClassCleanup]
+        public static void ClassTeardown()
+        {
+            var localDb = new LocalDbContext(typeof(UnitTest1));
+
+            localDb.DropDatabase();
+        }
+
+
+        [TestMethod]
+        public void InitializationTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void SimpleDbTest()
+        {
 
             //Add a product
             var product = new Product() 
             { 
                 ProductName = $"Product {Guid.NewGuid()}"
             };
-            dbRetail.Add(product);
+            _dbRetail.Add(product);
 
-            dbRetail.SaveChanges();
+            _dbRetail.SaveChanges();
 
 
             //Purge all products
-            var products = dbRetail.Products.ToList();
+            var products = _dbRetail.Products.ToList();
             foreach (var p in products)
-                dbRetail.Remove(p);
+                _dbRetail.Remove(p);
 
-            dbRetail.SaveChanges();
-
+            _dbRetail.SaveChanges();
         }
     }
+
+
 }
