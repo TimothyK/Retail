@@ -1,3 +1,5 @@
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.Models;
 using System;
@@ -11,7 +13,17 @@ namespace Retail.Data.Tests
         [TestMethod]
         public void TestMethod1()
         {
-            var dbRetail = new RetailContext();
+            var connectionStringBuilder = new SqlConnectionStringBuilder
+            {
+                DataSource = @"(localdb)\mssqllocaldb",
+                IntegratedSecurity = true,
+                InitialCatalog = "Retail"
+            };
+            var contextBuilder = new DbContextOptionsBuilder<RetailContext>();           ;            
+            contextBuilder
+                .UseSqlServer(connectionStringBuilder.ConnectionString);
+
+            var dbRetail = new RetailContext(contextBuilder.Options);
 
             //Add a product
             var product = new Product() 
