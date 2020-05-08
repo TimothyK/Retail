@@ -54,7 +54,8 @@ namespace Retail.Data.Tests.Extensions
         {
             TestClassType = testClassType;
 
-            DatabaseName = TestClassType.FullName.Replace(".", " ")
+            DatabaseName = "Test_"
+                + TestClassType.FullName
                 + (string.IsNullOrWhiteSpace(testMethodName) ? string.Empty : " " + testMethodName);                              
 
             var assembly = TestClassType.Assembly;
