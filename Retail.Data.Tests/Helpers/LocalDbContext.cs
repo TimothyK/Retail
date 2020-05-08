@@ -29,7 +29,6 @@ namespace Retail.Data.Tests.Extensions
     /// </remarks>
     public class LocalDbContext
     {
-        public readonly Type TestClassType;
         public readonly DirectoryInfo AssemblyPath;
 
         /// <summary>
@@ -52,13 +51,11 @@ namespace Retail.Data.Tests.Extensions
         /// </remarks>
         public LocalDbContext(Type testClassType, string testMethodName = null)
         {
-            TestClassType = testClassType;
-
             DatabaseName = "Test_"
-                + TestClassType.FullName
+                + testClassType.FullName
                 + (string.IsNullOrWhiteSpace(testMethodName) ? string.Empty : " " + testMethodName);                              
 
-            var assembly = TestClassType.Assembly;
+            var assembly = testClassType.Assembly;
             var file = new FileInfo(assembly.Location);
             AssemblyPath = file.Directory;
         }
