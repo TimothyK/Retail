@@ -1,4 +1,4 @@
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Retail.Data.Tests.Helpers;
 using System;
@@ -57,6 +57,16 @@ namespace Retail.Data.Tests.Extensions
                 + (string.IsNullOrWhiteSpace(testMethodName) ? string.Empty : " " + testMethodName);                              
 
             var assembly = testClassType.Assembly;
+            var file = new FileInfo(assembly.Location);
+            AssemblyPath = file.Directory;
+        }
+
+        public LocalDbTestContext(Assembly assembly, string testContext = null)
+        {
+            DatabaseName = "Test_"
+                + assembly.GetName().Name
+                + (string.IsNullOrWhiteSpace(testContext) ? string.Empty : " " + testContext);
+
             var file = new FileInfo(assembly.Location);
             AssemblyPath = file.Directory;
         }
