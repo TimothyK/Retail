@@ -1,10 +1,11 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Retail.Data.Tests.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Retail.Data.Tests.Extensions
 {
@@ -15,7 +16,7 @@ namespace Retail.Data.Tests.Extensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The <see cref="LocalDbContext"/> holds a context of a unit test class or test method.
+    /// The <see cref="LocalDbTestContext"/> holds a context of a unit test class or test method.
     /// It can create a create a new copy (see <see cref="AttachDatabase(string[])"/>) 
     /// of a database using the context as the new database name.
     /// Because each test context is uniquely named, the unit tests are isolated from each other.
@@ -27,7 +28,7 @@ namespace Retail.Data.Tests.Extensions
     /// This can be overridden with <see cref="MasterDbContext.ConnectionString"/>.
     /// </para>
     /// </remarks>
-    public class LocalDbContext
+    public class LocalDbTestContext
     {
         public readonly DirectoryInfo AssemblyPath;
 
@@ -49,7 +50,7 @@ namespace Retail.Data.Tests.Extensions
         /// Therefore the attack vector is quite low. 
         /// </para>
         /// </remarks>
-        public LocalDbContext(Type testClassType, string testMethodName = null)
+        public LocalDbTestContext(Type testClassType, string testMethodName = null)
         {
             DatabaseName = "Test_"
                 + testClassType.FullName
@@ -95,7 +96,7 @@ namespace Retail.Data.Tests.Extensions
         /// localDb.AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
         /// </code>
         /// </example>
-        public LocalDbContext AttachDatabase(params string[] databaseFiles)
+        public LocalDbTestContext AttachDatabase(params string[] databaseFiles)
         {
             if (databaseFiles == null || databaseFiles.Length < 1)
                 throw new ArgumentException("At least 1 MDF file must be specified", nameof(databaseFiles));
