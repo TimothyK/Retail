@@ -17,7 +17,7 @@ namespace Retail.Data.Tests
         [ClassInitialize]
         public static void ClassSetup(TestContext context)
         {
-            var localDb = new LocalDbContext(typeof(UnitTest1));
+            var localDb = new LocalDbTestContext(typeof(UnitTest1));
             
             localDb.AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
 
@@ -27,7 +27,7 @@ namespace Retail.Data.Tests
         [ClassCleanup]
         public static void ClassTeardown()
         {
-            var localDb = new LocalDbContext(typeof(UnitTest1));
+            var localDb = new LocalDbTestContext(typeof(UnitTest1));
 
             localDb.DropDatabase();
         }
