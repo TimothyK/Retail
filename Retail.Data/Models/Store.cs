@@ -35,6 +35,8 @@ namespace Retail.Data.Models
         [Required]
         [StringLength(20)]
         public string PhoneNumber { get; set; }
+        [Required]
+        public bool? Active { get; set; }
 
         [InverseProperty(nameof(Order.Store))]
         public virtual ICollection<Order> Orders { get; set; }

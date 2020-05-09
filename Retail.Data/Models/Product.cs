@@ -18,8 +18,12 @@ namespace Retail.Data.Models
         [Required]
         [StringLength(50)]
         public string ProductName { get; set; }
-        [Column(TypeName = "decimal(18, 0)")]
+        [Column(TypeName = "decimal(9, 2)")]
         public decimal? Price { get; set; }
+        [Required]
+        public bool? Active { get; set; }
+        [Column(TypeName = "decimal(9, 2)")]
+        public decimal? SalesPrice { get; set; }
 
         [InverseProperty(nameof(OrderLineItem.Product))]
         public virtual ICollection<OrderLineItem> OrderLineItems { get; set; }

@@ -12,7 +12,7 @@ namespace Retail.Data.Models
         public int LineItemId { get; set; }
         public int OrderId { get; set; }
         public int ProductId { get; set; }
-        [Column(TypeName = "decimal(18, 0)")]
+        [Column(TypeName = "decimal(9, 2)")]
         public decimal Price { get; set; }
 
         [ForeignKey(nameof(OrderId))]

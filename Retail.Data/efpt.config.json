@@ -1,10 +1,10 @@
 ﻿{
-   "ContextClassName": "RetailContext",
+   "ContextClassName": "RetailDbContext",
    "ContextNamespace": null,
    "DefaultDacpacSchema": null,
    "DoNotCombineNamespace": false,
    "IdReplace": false,
-   "IncludeConnectionString": true,
+   "IncludeConnectionString": false,
    "ModelNamespace": null,
    "OutputContextPath": ".",
    "OutputPath": "Models",
@@ -15,6 +15,10 @@
       {
          "HasPrimaryKey": true,
          "Name": "[dbo].[Customers]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[Inventory]"
       },
       {
          "HasPrimaryKey": true,

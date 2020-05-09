@@ -130,7 +130,6 @@ If Not Exists (Select 1 From sys.tables Where (name = 'DBVersion'))
 			Constraint PK_DBVersion
 			Primary Key Clustered
 		, Version varchar(50) not null
-		, SentryEmbeddedVersion varchar(50)
 		, IsSuspect bit
 			Constraint DF_DBVersion_IsSuspect
 			Default 0
@@ -146,8 +145,8 @@ GO
 Print ''
 Print 'Creating database version row'
 GO
-Insert Into dbo.DBVersion (DBProduct, Version, SentryEmbeddedVersion, Notes)
-Values ('Retail', '1.0', '1.0', @@SERVERNAME + '.' + DB_NAME())
+Insert Into dbo.DBVersion (DBProduct, Version, Notes)
+Values ('Retail', '1.0', @@SERVERNAME + '.' + DB_NAME())
 GO
 Print 'Creating database version row...Done'
 GO
@@ -417,6 +416,516 @@ GO
 
 /* Finished message */
 Print 'Running script:  Create Retail 1.0...Done'
+Print ''
+GO
+
+/* Upgrade Retail 1.01
+** Prepared: May 9, 2020 (TK)
+**
+** Active Flags
+** Customers.MembershipNumber
+** Customers.Discount
+** Products.SalesPrice
+** Add decimals to Price columns (Products & OrderLineItems)
+** Inventory
+*/
+
+Print 'Running script:  Upgrade Retail 1.01'
+GO
+
+/* Prerequisite Checks */
+
+--Permission Check
+If Not Exists(SELECT permission_name FROM fn_my_permissions(DB_NAME(), 'DATABASE') Where (permission_name In ('CREATE TABLE')))
+	Begin
+	RAISERROR ('Prerequisite Error: Insufficient Privileges.  Requires permissions to create and modify tables.  Check that this script is being run by the correct login.', 17, 1) 
+	set nocount on
+	set noexec on
+	End
+GO
+
+--Check that the DBProduct is at the correct version to receive this script
+Declare @DBProduct varchar(50)
+Declare @MajorVersionNumber varchar(4)
+Declare @MinorVersionBefore varchar(20)
+Declare @MinorVersionAfter varchar(20)
+
+Set @DBProduct = 'Retail'
+Set @MajorVersionNumber = '1'
+Set @MinorVersionBefore = '0'
+Set @MinorVersionAfter  = '01'
+
+If Not Exists (Select 1 From sys.tables Where (name = 'DBVersion'))
+	Begin
+	RAISERROR ('Prerequisite Error: No Process Solutions DB products are installed. Upgrade could not be applied.  Check that the current database is set.', 17, 1) 
+	set nocount on
+	set noexec on
+	End
+If Exists (Select 1 From dbo.DBVersion Where (DBProduct = @DBProduct) And (IsSuspect = 1))
+	Begin
+	RAISERROR ('Prerequisite Error: This database is marked as suspect.  Previous errors must be investigated and the integrity of the database verified.  Contact Process Solutions for assistance repairing this database.', 17, 1) 
+	set nocount on
+	set noexec on
+	End
+If Exists (
+	Select Version 
+	From dbo.DBVersion 
+	Where (DBProduct = @DBProduct) And ((Cast(PARSENAME(Version ,2) as int) = Cast(@MajorVersionNumber as int) )) And ((Cast(PARSENAME(Version ,1 ) as int) >= Cast(@MinorVersionAfter as int) ))
+)
+	Begin
+	Print '                 Upgrade ' + @DBProduct + ' ' + @MajorVersionNumber +'.' + @MinorVersionAfter + '...Skipping (already applied)'
+	set nocount on
+	set noexec on
+	End
+If Not Exists (Select 1 From dbo.DBVersion Where (DBProduct = @DBProduct) And ((Cast(PARSENAME(Version ,2) as int) = Cast(@MajorVersionNumber as int) )) And  ((Cast(PARSENAME(Version ,1 ) as int) = Cast(@MinorVersionBefore as int))))
+	Begin
+	Declare @v varchar(200)
+	Select @v = DBProduct + ' ' + Version
+	From dbo.DBVersion Where (DBProduct = @DBProduct)
+	Print '  The current database version is:  ' + IsNull(@v, 'not found/installed')
+	Print '  The expected database version is: ' + @DBProduct + ' ' + @MajorVersionNumber + '.' + @MinorVersionBefore
+
+	RAISERROR ('Prerequisite Error: Version is not appropriate to receive this upgrade.  See above for version information.', 17, 1) 
+
+	set nocount on
+	set noexec on
+	End
+GO
+
+/* Create DBHistory entry */
+Set NOCOUNT ON
+
+Insert Into dbo.DBHistory (
+	ScriptName, Notes
+	, DBProduct, BeforeVersion, BeforeSuspect
+)
+Select 'Upgrade Retail 1.01', 'Active Flags, Customers.MembershipNumber & discount, Products.SalesPrice, Inventory (T#1234)'
+	, DBProduct, Version, IsSuspect
+From dbo.DBVersion
+Where (DBProduct = 'Retail')
+GO
+Set NOCOUNT OFF
+GO
+
+/****************************************************************************************************
+************************************  Start of script  **********************************************
+****************************************************************************************************/
+
+
+/* Create Column dbo.Customers.Active */
+Print ''
+Print 'Create Column dbo.Customers.Active'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Customers') And (col.name = 'Active')
+)
+	Begin
+	Print 'Create Column dbo.Customers.Active...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Customers
+	Add Active bit not null
+		Constraint DF_Customers_Active
+		Default (1)
+
+	Print 'Create Column dbo.Customers.Active...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Customers.Active...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Customers.Active' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Column dbo.Products.Active */
+Print ''
+Print 'Create Column dbo.Products.Active'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Products') And (col.name = 'Active')
+)
+	Begin
+	Print 'Create Column dbo.Products.Active...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Products
+	Add Active bit not null
+		Constraint DF_Products_Active
+		Default (1)
+
+	Print 'Create Column dbo.Products.Active...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Products.Active...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Products.Active' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Column dbo.Stores.Active */
+Print ''
+Print 'Create Column dbo.Stores.Active'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Stores') And (col.name = 'Active')
+)
+	Begin
+	Print 'Create Column dbo.Stores.Active...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Stores
+	Add Active bit not null
+		Constraint DF_Stores_Active
+		Default (1)
+
+	Print 'Create Column dbo.Stores.Active...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Stores.Active...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Stores.Active' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Column dbo.Customers.MembershipNumber */
+Print ''
+Print 'Create Column dbo.Customers.MembershipNumber'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Customers') And (col.name = 'MembershipNumber')
+)
+	Begin
+	Print 'Create Column dbo.Customers.MembershipNumber...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Customers
+	Add MembershipNumber uniqueidentifier not null
+		Constraint DF_Customers_MembershipNumber
+		Default NewId()
+
+	Print 'Create Column dbo.Customers.MembershipNumber...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Customers.MembershipNumber...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Customers.MembershipNumber' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Index UQ_Customers_MembershipNumber */
+Print ''
+Print 'Create Index UQ_Customers_MembershipNumber'
+GO
+
+If Exists (
+	Select 1 
+	From sys.indexes idx
+		Inner Join sys.tables tbl On (idx.object_id = tbl.object_id)
+		Inner Join sys.schemas sch On (tbl.schema_id = sch.schema_id)
+	Where (sch.name = 'dbo') And (tbl.name = 'Customers') And (idx.name = 'UQ_Customers_MembershipNumber')
+)
+	Begin
+		Print 'Create Index UQ_Customers_MembershipNumber...Skipping (already created)'
+	End
+Else
+	Begin
+		Create Unique Index UQ_Customers_MembershipNumber
+		On dbo.Customers(MembershipNumber)
+
+		Print 'Create Index UQ_Customers_MembershipNumber...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Index UQ_Customers_MembershipNumber...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Index UQ_Customers_MembershipNumber' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+/* Create Column dbo.Customers.Discount */
+Print ''
+Print 'Create Column dbo.Customers.Discount'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Customers') And (col.name = 'Discount')
+)
+	Begin
+	Print 'Create Column dbo.Customers.Discount...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Customers
+	Add Discount float not null
+		Constraint DF_Customers_Discount
+		Default 0.0
+	, Constraint CK_Customers_Discount
+		Check (Discount Between 0.0 And 1.0)
+
+	Print 'Create Column dbo.Customers.Discount...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Customers.Discount...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Customers.Discount' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Column dbo.Products.SalesPrice */
+Print ''
+Print 'Create Column dbo.Products.SalesPrice'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Products') And (col.name = 'SalesPrice')
+)
+	Begin
+	Print 'Create Column dbo.Products.SalesPrice...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Products
+	Add SalesPrice decimal(9,2) null
+
+	Print 'Create Column dbo.Products.SalesPrice...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Products.SalesPrice...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Products.SalesPrice' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Alter dbo.Products.Price */
+Print ''
+Print 'Alter dbo.Products.Price'
+GO
+
+Alter Table dbo.Products
+Alter Column Price decimal(9,2) null
+
+Print 'Alter dbo.Products.Price...Done'
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Alter dbo.Products.Price...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Alter dbo.Products.Price' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+/* Alter dbo.OrderLineItems.Price */
+Print ''
+Print 'Alter dbo.OrderLineItems.Price'
+GO
+
+Alter Table dbo.OrderLineItems
+Alter Column Price decimal(9,2) not null
+
+Print 'Alter dbo.OrderLineItems.Price...Done'
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Alter dbo.OrderLineItems.Price...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Alter dbo.OrderLineItems.Price' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create dbo.Inventory table */
+Print ''
+Print 'Create dbo.Inventory table'
+GO
+
+If Exists (
+	Select 1 
+	From sys.tables tbl 
+		Inner Join sys.schemas sch On (tbl.schema_id = sch.schema_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Inventory')
+)
+	Begin
+		Print 'Create dbo.Inventory table...Skipping (already created)'
+	End
+Else
+	Begin
+		Create Table dbo.Inventory (
+			StoreId int not null
+			, ProductId int not null
+			, Quantity int not null
+			, Constraint PK_Inventory
+				Primary Key(StoreId, ProductId)			
+		)
+
+		Print 'Create dbo.Inventory table...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create dbo.Inventory table...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create dbo.Inventory table' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Index IX_Inventory_ProductId */
+Print ''
+Print 'Create Index IX_Inventory_ProductId'
+GO
+
+If Exists (
+	Select 1 
+	From sys.indexes idx
+		Inner Join sys.tables tbl On (idx.object_id = tbl.object_id)
+		Inner Join sys.schemas sch On (tbl.schema_id = sch.schema_id)
+	Where (sch.name = 'dbo') And (tbl.name = 'Inventory') And (idx.name = 'IX_Inventory_ProductId')
+)
+	Begin
+		Print 'Create Index IX_Inventory_ProductId...Skipping (already created)'
+	End
+Else
+	Begin
+		Create Index IX_Inventory_ProductId
+		On dbo.Inventory(ProductId)
+
+		Print 'Create Index IX_Inventory_ProductId...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Index IX_Inventory_ProductId...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Index IX_Inventory_ProductId' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+
+
+/****************************************************************************************************
+*************************************  End of script  ***********************************************
+****************************************************************************************************/
+
+-- Update Database Version
+Print ''
+Print 'Updating database version'
+GO
+Update dbo.DBVersion
+Set Version = '1.01'
+Where (DBProduct = 'Retail')
+	And (IsSuspect = 0)
+GO
+Print 'Updating database version...Done'
+GO
+
+/* Record the execution of this script (After state) in the DBHistory table */
+Set NOCOUNT ON
+
+Update dbo.DBHistory
+Set AfterVersion = DBVersion.Version
+	, AfterSuspect = DBVersion.IsSuspect
+From dbo.DBHistory, dbo.DBVersion
+Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory))
+	And (DBHistory.DBProduct = DBVersion.DBProduct)
+
+Set NOCOUNT OFF
+GO
+
+/* Turn off noexec */
+--If any errors occurred the script would have been set to noexec mode, which doesn't run the script.
+--This must be set back to normal mode at the end of this script.
+Print ''
+set noexec off
+set nocount off
+GO
+
+/* Finished message */
+Print 'Running script:  Upgrade Retail 1.01...Done'
 Print ''
 GO
 
