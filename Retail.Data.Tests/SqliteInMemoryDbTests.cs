@@ -7,42 +7,22 @@ using System.Linq;
 namespace Retail.Data.Tests
 {
     [TestClass]
-    public class SqliteInMemoryDbTests
+    public class SqliteInMemoryDbTests : BaseTests
     {
-        private static RetailDbContext _dbRetail;
-        private static SqliteDbContextFactory<RetailDbContext> _factory;
-
         [ClassInitialize]
         public static void ClassSetup(TestContext context)
         {
-            _factory = new SqliteDbContextFactory<RetailDbContext>(Type.GetType(context.FullyQualifiedTestClassName));
-            _dbRetail = _factory.CreateContext();
+            ContextFactory = new SqliteDbContextFactory<RetailDbContext>(Type.GetType(context.FullyQualifiedTestClassName));
+            _dbRetail = ContextFactory.CreateContext();
         }
 
         [ClassCleanup]
         public static void ClassTeardown()
         {
             _dbRetail?.Dispose();
-            _factory?.Dispose();
+            ContextFactory?.Dispose();
         }
 
-        [TestMethod]
-        public void SimpleDbTest()
-        {
-            //Add a product
-            var product = new Product()
-            {
-                ProductName = $"Product {Guid.NewGuid()}"
-            };
-            _dbRetail.Add(product);
-            _dbRetail.SaveChanges();
-
-            //Purge all products
-            var products = _dbRetail.Products.ToList();
-            foreach (var p in products)
-                _dbRetail.Remove(p);
-            _dbRetail.SaveChanges();
-        }
     }
 
 }
