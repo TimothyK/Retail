@@ -8,13 +8,12 @@ namespace Retail.Data.Tests
     [TestClass]
     public class AssemblyLocalDbTests
     {
-        public static RetailContext _dbRetail;
+        public static RetailDbContext _dbRetail;
 
         [ClassInitialize]
         public static void ClassSetup(TestContext context)
         {
-            var localDb = Databases.AttachAssemblyDatabase.LocalDbTestContext;
-            _dbRetail = new RetailContext(localDb.GetDbConnectionOptions<RetailContext>());
+            _dbRetail = Databases.AttachAssemblyDatabase.LocalDbFactory.CreateContext();
         }
 
         [TestMethod]

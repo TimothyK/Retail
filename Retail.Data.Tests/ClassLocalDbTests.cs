@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.Models;
 using Retail.Data.Tests.Extensions;
+using Retail.Data.Tests.Helpers;
 using System;
 using System.Linq;
 
@@ -9,21 +10,22 @@ namespace Retail.Data.Tests
     [TestClass]
     public class ClassLocalDbTests
     {
-        public static LocalDbTestContext _localDbTestContext;
-        public static RetailContext _dbRetail;
+        private static DbContextFactory<RetailDbContext> _dbFactory;
+        private static RetailDbContext _dbRetail;
 
         [ClassInitialize]
         public static void ClassSetup(TestContext context)
         {
-            _localDbTestContext = new LocalDbTestContext(Type.GetType(context.FullyQualifiedTestClassName));            
-            _localDbTestContext.AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
-            _dbRetail = new RetailContext(_localDbTestContext.GetDbConnectionOptions<RetailContext>());
+            _dbFactory = new LocalDbContextFactory<RetailDbContext>(Type.GetType(context.FullyQualifiedTestClassName))           
+                .AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
+            _dbRetail = _dbFactory.CreateContext();
         }
 
         [ClassCleanup]
         public static void ClassTeardown()
         {
-            _localDbTestContext.DropDatabase();
+            _dbRetail?.Dispose();
+            _dbFactory?.Dispose();
         }
 
         [TestMethod]

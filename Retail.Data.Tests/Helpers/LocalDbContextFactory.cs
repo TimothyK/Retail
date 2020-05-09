@@ -16,7 +16,7 @@ namespace Retail.Data.Tests.Extensions
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The <see cref="LocalDbTestContext"/> holds a context of a unit test class or test method.
+    /// The <see cref="LocalDbContextFactory"/> holds a context of a unit test class or test method.
     /// It can create a create a new copy (see <see cref="AttachDatabase(string[])"/>) 
     /// of a database using the context as the new database name.
     /// Because each test context is uniquely named, the unit tests are isolated from each other.
@@ -28,9 +28,9 @@ namespace Retail.Data.Tests.Extensions
     /// This can be overridden with <see cref="MasterDbContext.ConnectionString"/>.
     /// </para>
     /// </remarks>
-    public class LocalDbTestContext
+    public class LocalDbContextFactory<TContext> : DbContextFactory<TContext> where TContext : DbContext
     {
-        public readonly DirectoryInfo AssemblyPath;
+        private DirectoryInfo AssemblyPath => new FileInfo(Assembly.Location).Directory;
 
         /// <summary>
         /// Constructor
@@ -50,31 +50,15 @@ namespace Retail.Data.Tests.Extensions
         /// Therefore the attack vector is quite low. 
         /// </para>
         /// </remarks>
-        public LocalDbTestContext(Type testClassType, string testMethodName = null)
+        public LocalDbContextFactory(Type testClassType, string testMethodName = null) : base(testClassType, testMethodName)
         {
-            DatabaseName = "Test_"
-                + testClassType.FullName
-                + (string.IsNullOrWhiteSpace(testMethodName) ? string.Empty : " " + testMethodName);                              
-
-            var assembly = testClassType.Assembly;
-            var file = new FileInfo(assembly.Location);
-            AssemblyPath = file.Directory;
         }
 
-        public LocalDbTestContext(Assembly assembly, string testContext = null)
+        public LocalDbContextFactory(Assembly assembly, string testContext = null) : base(assembly, testContext)
         {
-            DatabaseName = "Test_"
-                + assembly.GetName().Name
-                + (string.IsNullOrWhiteSpace(testContext) ? string.Empty : " " + testContext);
-
-            var file = new FileInfo(assembly.Location);
-            AssemblyPath = file.Directory;
         }
 
-        /// <summary>
-        /// Name of the database copy to create
-        /// </summary>
-        public string DatabaseName { get; }
+        private bool _isAttached;
 
         /// <summary>
         /// Attaches a database from MDF, NDF, and LDF files to a new database on the LocalDb SQL Server.
@@ -102,11 +86,14 @@ namespace Retail.Data.Tests.Extensions
         /// </remarks>
         /// <example>
         /// <code>
-        /// var localDb = new LocalDbContext(typeof(UnitTest1));
-        /// localDb.AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
+        /// var localDbFactory = new LocalDbContextFactory&lt;DbContext&gt;(typeof(UnitTest1))
+        ///     .AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
+        /// _db = localDbFactory.CreateContext();
+        /// //...
+        /// localDbFactory.Dispose();
         /// </code>
         /// </example>
-        public LocalDbTestContext AttachDatabase(params string[] databaseFiles)
+        public LocalDbContextFactory<TContext> AttachDatabase(params string[] databaseFiles)
         {
             if (databaseFiles == null || databaseFiles.Length < 1)
                 throw new ArgumentException("At least 1 MDF file must be specified", nameof(databaseFiles));
@@ -128,7 +115,9 @@ namespace Retail.Data.Tests.Extensions
                 map.Key.CopyTo(map.Value.FullName, overwrite: true);
 
             dbMaster.AttachDatabase(DatabaseName, renameMap.Values.ToArray());
-            
+
+            _isAttached = true;
+
             return this;
         }
 
@@ -137,6 +126,12 @@ namespace Retail.Data.Tests.Extensions
             var badFile = files.FirstOrDefault(file => !file.Exists);
             if (badFile != null)
                 throw new FileNotFoundException("Database file to attach was not found", badFile.FullName);
+        }
+
+        public override void Dispose()
+        {
+            DropDatabase();
+            base.Dispose();
         }
 
         /// <summary>
@@ -148,25 +143,24 @@ namespace Retail.Data.Tests.Extensions
             dbMaster.DropDatabase(DatabaseName);
         }
 
-        /// <summary>
-        /// Connection options for EF Core DbContext
-        /// </summary>
-        /// <typeparam name="T">DbContext sub class</typeparam>
-        /// <returns></returns>
-        public DbContextOptions<T> GetDbConnectionOptions<T>() where T : DbContext
+        public override TContext CreateContext()
         {
-            var contextBuilder = new DbContextOptionsBuilder<T>();
+            if (!_isAttached)
+                throw new InvalidOperationException($"Call {nameof(AttachDatabase)} first.");
+
+            return base.CreateContext();
+        }
+
+        protected override DbContextOptions<TContext> CreateOptions()
+        {
+            var contextBuilder = new DbContextOptionsBuilder<TContext>();
             contextBuilder
                 .UseSqlServer(ConnectionString.ConnectionString);
 
             return contextBuilder.Options;
         }
 
-        /// <summary>
-        /// Connection String to the database for this text context.
-        /// </summary>
-        /// <seealso cref="DatabaseName"/>
-        public SqlConnectionStringBuilder ConnectionString
+        private SqlConnectionStringBuilder ConnectionString
         {
             get
             {

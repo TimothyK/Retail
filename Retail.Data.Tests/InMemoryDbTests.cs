@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.Models;
+using Retail.Data.Tests.Helpers;
 using System;
 using System.Linq;
 
@@ -9,20 +9,21 @@ namespace Retail.Data.Tests
     [TestClass]
     public class InMemoryDbTests
     {
-        public static RetailContext _dbRetail;
+        private static DbContextFactory<RetailDbContext> _dbFactory;
+        private static RetailDbContext _dbRetail;
 
         [ClassInitialize]
         public static void ClassSetup(TestContext context)
         {
-            var optionBuilder = new DbContextOptionsBuilder<RetailContext>()
-                .UseInMemoryDatabase(context.FullyQualifiedTestClassName);
-            _dbRetail = new RetailContext(optionBuilder.Options);
+            _dbFactory = new InMemoryDbContextFactory<RetailDbContext>(Type.GetType(context.FullyQualifiedTestClassName));
+            _dbRetail = _dbFactory.CreateContext();
         }
 
         [ClassCleanup]
         public static void ClassTeardown()
         {
             _dbRetail.Dispose();
+            _dbFactory.Dispose();
         }
 
         [TestMethod]

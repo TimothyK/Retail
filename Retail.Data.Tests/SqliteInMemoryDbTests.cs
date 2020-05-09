@@ -9,21 +9,21 @@ namespace Retail.Data.Tests
     [TestClass]
     public class SqliteInMemoryDbTests
     {
-        private static RetailContext _dbRetail;
-        private static SqliteDbContextFactory<RetailContext> _factory;
+        private static RetailDbContext _dbRetail;
+        private static SqliteDbContextFactory<RetailDbContext> _factory;
 
         [ClassInitialize]
         public static void ClassSetup(TestContext context)
         {
-            _factory = new SqliteDbContextFactory<RetailContext>();
+            _factory = new SqliteDbContextFactory<RetailDbContext>(Type.GetType(context.FullyQualifiedTestClassName));
             _dbRetail = _factory.CreateContext();
         }
 
         [ClassCleanup]
         public static void ClassTeardown()
         {
-            _factory?.Dispose();
             _dbRetail?.Dispose();
+            _factory?.Dispose();
         }
 
         [TestMethod]

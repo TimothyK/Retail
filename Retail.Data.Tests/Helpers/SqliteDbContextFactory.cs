@@ -2,14 +2,23 @@
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data.Common;
+using System.Reflection;
 
 namespace Retail.Data.Tests.Helpers
 {
-    public class SqliteDbContextFactory<T> : IDisposable where T : DbContext
+    public class SqliteDbContextFactory<TContext> : DbContextFactory<TContext> where TContext : DbContext
     {
+        public SqliteDbContextFactory(Type testClassType, string testMethodName = null) : base(testClassType, testMethodName)
+        {
+        }
+
+        public SqliteDbContextFactory(Assembly assembly, string testContext = null) : base(assembly, testContext)
+        {
+        }
+
         private DbConnection _connection;
 
-        public T CreateContext()
+        public override TContext CreateContext()
         {
             if (_connection == null)
             {
@@ -18,30 +27,26 @@ namespace Retail.Data.Tests.Helpers
                 _connection = new SqliteConnection(connStrBuilder.ConnectionString);
                 _connection.Open();
 
-                var context = CreateNewContext();
+                var context = base.CreateContext();
                 context.Database.EnsureCreated();
                 return context;
             }
 
-            return CreateNewContext();
+            return base.CreateContext();
         }
 
-        private T CreateNewContext()
+        protected override DbContextOptions<TContext> CreateOptions()
         {
-            var options = CreateOptions();
-            return (T)Activator.CreateInstance(typeof(T), options);
-        }
-
-        private DbContextOptions<RetailContext> CreateOptions()
-        {
-            return new DbContextOptionsBuilder<RetailContext>()
+            return new DbContextOptionsBuilder<TContext>()
                 .UseSqlite(_connection).Options;
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _connection?.Dispose();
             _connection = null;
+
+            base.Dispose();
         }
     }
 

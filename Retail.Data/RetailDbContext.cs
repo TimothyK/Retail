@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Retail.Data
 {
-    public partial class RetailContext : DbContext
+    public partial class RetailDbContext : DbContext
     {
 
-        public RetailContext(DbContextOptions<RetailContext> options)
+        public RetailDbContext(DbContextOptions<RetailDbContext> options)
             : base(options)
         {
         }
