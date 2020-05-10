@@ -427,7 +427,11 @@ GO
 ** Customers.Discount
 ** Products.SalesPrice
 ** Add decimals to Price columns (Products & OrderLineItems)
+** OrderLineItems.Quantity, UnitPrice and TotalPrice
 ** Inventory
+*/
+/* Modifications
+rev2 - added Orders.TotalPrice
 */
 
 Print 'Running script:  Upgrade Retail 1.01'
@@ -499,7 +503,7 @@ Insert Into dbo.DBHistory (
 	ScriptName, Notes
 	, DBProduct, BeforeVersion, BeforeSuspect
 )
-Select 'Upgrade Retail 1.01', 'Active Flags, Customers.MembershipNumber & discount, Products.SalesPrice, Inventory (T#1234)'
+Select 'Upgrade Retail 1.01 (rev2)', 'Active Flags, Customers.MembershipNumber & discount, Products.SalesPrice, Inventory (T#1234)'
 	, DBProduct, Version, IsSuspect
 From dbo.DBVersion
 Where (DBProduct = 'Retail')
@@ -789,13 +793,78 @@ if (@@error <> 0)
 	End
 GO
 
-/* Alter dbo.OrderLineItems.Price */
+
+/* Create Column dbo.OrderLineItems.Quantity */
+Print ''
+Print 'Create Column dbo.OrderLineItems.Quantity'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'OrderLineItem') And (col.name = 'Quantity')
+)
+	Begin
+	Print 'Create Column dbo.OrderLineItems.Quantity...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.OrderLineItems
+	Add Quantity int null
+		, UnitPrice decimal(9,2) null
+		, TotalPrice decimal(9,2) null
+
+	Print 'Create Column dbo.OrderLineItems.Quantity...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.OrderLineItems.Quantity...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.OrderLineItems.Quantity' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Populate Quantity and Prices */
+Print ''
+Print 'Populate Quantity and Prices'
+GO
+
+Update dbo.OrderLineItems
+Set Quantity = 1, UnitPrice = Price, TotalPrice = Price
+
+Print 'Populate Quantity and Prices...Done'
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Populate Quantity and Prices...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Populate Quantity and Prices' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+/* Alter dbo.OrderLineItems.Prices not null */
 Print ''
 Print 'Alter dbo.OrderLineItems.Price'
 GO
 
 Alter Table dbo.OrderLineItems
-Alter Column Price decimal(9,2) not null
+Alter Column Quantity int not null
+
+Alter Table dbo.OrderLineItems
+Alter Column UnitPrice decimal(9,2) not null
+
+Alter Table dbo.OrderLineItems
+Alter Column TotalPrice decimal(9,2) not null
 
 Print 'Alter dbo.OrderLineItems.Price...Done'
 GO
@@ -805,6 +874,122 @@ if (@@error <> 0)
 	Print 'Alter dbo.OrderLineItems.Price...ERRORS OCCURRED - Marking DB as suspect'
 	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
 	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Alter dbo.OrderLineItems.Price' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Drop dbo.OrderLineItems.Price */
+Print ''
+Print 'Drop dbo.OrderLineItems.Price'
+GO
+
+If Not Exists (
+	Select 1 
+	From sys.tables tbl 
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+		Inner Join sys.schemas sch On (tbl.schema_id = sch.schema_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'OrderLineItems') And (col.name = 'Price')
+)
+	Begin
+		Print 'Drop dbo.OrderLineItems.Price...Skipping (already dropped)'
+	End
+Else
+	Begin
+		Alter Table dbo.OrderLineItems
+		Drop Column Price
+
+		Print 'Drop dbo.OrderLineItems.Price...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Drop dbo.OrderLineItems.Price...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Drop dbo.OrderLineItems.Price' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Create Column dbo.Orders.TotalPrice */
+Print ''
+Print 'Create Column dbo.Orders.TotalPrice'
+GO
+
+If Exists (
+	Select 1 
+	From sys.schemas sch
+		Inner Join sys.tables tbl On (sch.schema_id = tbl.schema_id)
+		Inner Join sys.columns col On (tbl.object_id = col.object_id)
+	Where (sch.name = 'dbo') And (tbl.Name = 'Orders') And (col.name = 'TotalPrice')
+)
+	Begin
+	Print 'Create Column dbo.Orders.TotalPrice...Skipping (already added)'
+	End
+Else
+	Begin
+	Alter Table dbo.Orders
+	Add TotalPrice decimal(9,2) null
+
+	Print 'Create Column dbo.Orders.TotalPrice...Done'
+	End
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Create Column dbo.Orders.TotalPrice...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Create Column dbo.Orders.TotalPrice' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Calculate Order Price */
+Print ''
+Print 'Calculate Order Price'
+GO
+
+Update bill
+Set TotalPrice = lineItem.TotalPrice
+From dbo.Orders bill
+	Left Join (Select lineItem.OrderId, IsNull(Sum(lineItem.TotalPrice), 0) As TotalPrice From dbo.OrderLineItems lineItem Group By lineItem.OrderId) lineItem On (bill.OrderId = lineItem.OrderId)
+
+Print 'Calculate Order Price...Done'
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Calculate Order Price...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Calculate Order Price' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
+	set nocount on
+	set noexec on
+	End
+GO
+
+
+/* Alter dbo.Orders.TotalPrice */
+Print ''
+Print 'Alter dbo.Orders.TotalPrice'
+GO
+
+Alter Table dbo.Orders
+Alter Column TotalPrice decimal(9,2) not null
+
+Print 'Alter dbo.Orders.TotalPrice...Done'
+GO
+if (@@error <> 0)
+	Begin
+	While (@@TRANCOUNT > 0) Rollback Transaction
+	Print 'Alter dbo.Orders.TotalPrice...ERRORS OCCURRED - Marking DB as suspect'
+	Update dbo.DBVersion Set IsSuspect = 1, SuspectTimeUtc = GETUTCDATE() Where (DBProduct = 'Retail')
+	Update dbo.DBHistory Set AfterSuspect = 1, Notes = 'Error during Alter dbo.Orders.TotalPrice' Where (ExecutionID In (Select Max(ExecutionID) From dbo.DBHistory)) And (DBProduct = 'Retail')
 	set nocount on
 	set noexec on
 	End
