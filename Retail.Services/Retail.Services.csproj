@@ -8,4 +8,8 @@
     <Folder Include="OrderCreation\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Retail.Data.Abstractions\Retail.Data.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>
