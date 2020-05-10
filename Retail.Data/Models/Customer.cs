@@ -33,8 +33,8 @@ namespace Retail.Data.Models
         public string PhoneNumber { get; set; }
         [Required]
         public bool? Active { get; set; }
-        public double Discount { get; set; }
         public Guid MembershipNumber { get; set; }
+        public double Discount { get; set; }
 
         [InverseProperty(nameof(Order.Customer))]
         public virtual ICollection<Order> Orders { get; set; }

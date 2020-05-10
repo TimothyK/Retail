@@ -12,8 +12,11 @@ namespace Retail.Data.Models
         public int LineItemId { get; set; }
         public int OrderId { get; set; }
         public int ProductId { get; set; }
+        public int Quantity { get; set; }
         [Column(TypeName = "decimal(9, 2)")]
-        public decimal Price { get; set; }
+        public decimal UnitPrice { get; set; }
+        [Column(TypeName = "decimal(9, 2)")]
+        public decimal TotalPrice { get; set; }
 
         [ForeignKey(nameof(OrderId))]
         [InverseProperty("OrderLineItems")]

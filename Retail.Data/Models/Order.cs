@@ -29,6 +29,8 @@ namespace Retail.Data.Models
         public string ShippingPostalCode { get; set; }
         [StringLength(20)]
         public string CustomerPhoneNumber { get; set; }
+        [Column(TypeName = "decimal(9, 2)")]
+        public decimal TotalPrice { get; set; }
 
         [ForeignKey(nameof(CustomerId))]
         [InverseProperty("Orders")]
