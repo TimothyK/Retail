@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Retail.Data.Abstractions.StoreLocator;
+using Retail.Services.Utilities;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,9 +14,7 @@ namespace Retail.Services.StoreLocator
         public StoreLocatorService(IStoreRepository repo)
         {
             _repo = repo;
-
-            var config = new MapperConfiguration(cfg => cfg.CreateMap<StoreDto, Store>());
-            _mapper = config.CreateMapper();
+            _mapper = AutoMap.Mapper;
         }
 
         public IEnumerable<Store> GetStores() =>
