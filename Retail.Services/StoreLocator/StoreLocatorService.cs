@@ -6,9 +6,9 @@ namespace Retail.Services.StoreLocator
 {
     public class StoreLocatorService
     {
-        private readonly IStoreSearch _repo;
+        private readonly IStoreRepository _repo;
 
-        public StoreLocatorService(IStoreSearch repo)
+        public StoreLocatorService(IStoreRepository repo)
         {
             _repo = repo;
         }
@@ -18,9 +18,16 @@ namespace Retail.Services.StoreLocator
             return Enumerable.Empty<Store>();
         }
 
-        public Store GetStoreById(int storeId) 
+        public Store GetStoreById(int storeId)
         {
-            return null;
+            var dto = _repo.GetStoreById(storeId);
+            if (dto == null) return null;
+
+            return new Store
+            {
+                StoreId = dto.StoreId,
+                StoreName = dto.StoreName
+            };
         }
 
     }

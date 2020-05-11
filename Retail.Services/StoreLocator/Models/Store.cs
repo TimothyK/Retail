@@ -2,8 +2,8 @@
 {
     public class Store
     {
-        public int StoreId { get; }
-        public string StoreName { get; }
+        public int StoreId { get; internal set; }
+        public string StoreName { get; internal set; }
     }
 
 }

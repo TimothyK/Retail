@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Retail.Data.Abstractions.CustomerService
 {
-    public interface ICustomerSearch
+    public interface ICustomerRepository
     {
         CustomerDto GetCustomerByMembershipNumber(Guid membershipNumber);
     }

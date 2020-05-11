@@ -8,9 +8,9 @@ namespace Retail.Services.OrderCreation
 {
     public class OrderCreationService
     {
-        private readonly IOrderSearch _repo;
+        private readonly IOrderRepository _repo;
 
-        public OrderCreationService(IOrderSearch repo)
+        public OrderCreationService(IOrderRepository repo)
         {
             _repo = repo;
         }

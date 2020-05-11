@@ -2,7 +2,7 @@
 
 namespace Retail.Data.Abstractions.StoreLocator
 {
-    public interface IStoreSearch
+    public interface IStoreRepository
     {
         IEnumerable<StoreDto> GetStores();
         StoreDto GetStoreById(int storeId);

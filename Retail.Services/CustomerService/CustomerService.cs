@@ -5,9 +5,9 @@ namespace Retail.Services.CustomerService
 {
     public class CustomerService
     {
-        private readonly ICustomerSearch _repo;
+        private readonly ICustomerRepository _repo;
 
-        public CustomerService(ICustomerSearch repo)
+        public CustomerService(ICustomerRepository repo)
         {
             _repo = repo;
         }

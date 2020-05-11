@@ -2,12 +2,12 @@
 
 namespace Retail.Data.Abstractions.OrderCreation
 {
-    public interface IOrderSearch
+    public interface IOrderRepository
     {
         IEnumerable<ProductDto> GetAvailableProducts(ICustomerIdentifier customer, IStoreIdentifier store);
 
         void CreateOrder(OrderDto order);
 
-        void DecrementProductInventory(IProductIdentifier product, int quantity);
+        void DecrementProductInventory(IProductIdentifier product, IStoreIdentifier store, int quantity);
     }
 }
