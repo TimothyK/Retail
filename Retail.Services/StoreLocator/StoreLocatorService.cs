@@ -13,22 +13,26 @@ namespace Retail.Services.StoreLocator
             _repo = repo;
         }
 
-        public IEnumerable<Store> GetStores()
-        {
-            return Enumerable.Empty<Store>();
-        }
+        public IEnumerable<Store> GetStores() =>
+            _repo.GetStores()
+                .Select(DtoToStore)
+                .ToList();
 
         public Store GetStoreById(int storeId)
         {
             var dto = _repo.GetStoreById(storeId);
             if (dto == null) return null;
 
-            return new Store
+            return DtoToStore(dto);
+        }
+
+        private Store DtoToStore(StoreDto dto) =>
+            new Store
             {
                 StoreId = dto.StoreId,
                 StoreName = dto.StoreName
             };
-        }
+
 
     }
 
