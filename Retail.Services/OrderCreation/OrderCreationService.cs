@@ -46,7 +46,14 @@ namespace Retail.Services.OrderCreation
 
         public void SubmitOrder(Order order)
         {
+            if (!order.LineItems.Any())
+                throw new InvalidOperationException("Order must have line items");
 
+            _repo.CreateOrder(_mapper.Map<OrderDto>(order));
+
+            foreach (var lineItem in order.LineItems)
+                _repo.DecrementProductInventory(lineItem.Product, order.Store, lineItem.Quantity);
+            
         }
     }
 }
