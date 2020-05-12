@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Retail.Data.Abstractions.CustomerService
+namespace Retail.Data.Abstractions.CustomerServices
 {
     public interface ICustomerRepository
     {

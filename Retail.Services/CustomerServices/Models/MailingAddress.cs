@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Retail.Services.CustomerService
+namespace Retail.Services.CustomerServices
 {
     public class MailingAddress
     {
