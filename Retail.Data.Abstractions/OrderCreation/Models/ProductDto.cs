@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Retail.Data.Abstractions.OrderCreation
+﻿namespace Retail.Data.Abstractions.OrderCreation
 {
     public class ProductDto : IProductIdentifier
     {
-        public int ProductId { get; }
-        public string ProductName { get; }
+        public int ProductId { get; set; }
+        public string ProductName { get; set; }
         
-        public decimal Price { get; }
-        public decimal SalesPrice { get; }
+        public decimal Price { get; set; }
+        public decimal SalesPrice { get; set; }
 
-        public int Quantity { get; }        
+        public int Quantity { get; set; }
     }
 }
