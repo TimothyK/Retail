@@ -57,7 +57,6 @@ namespace Retail.Services.UnitTests.CustomerServices
             customer.Address.PostalCode.ShouldBe(dto.PostalCode);
 
             customer.PhoneNumber.ShouldBe(dto.PhoneNumber);
-            customer.Discount.ShouldBe(dto.Discount);
         }
 
         private CustomerDto TypicalCustomer()
@@ -73,8 +72,7 @@ namespace Retail.Services.UnitTests.CustomerServices
                 Province = "Robshire",
                 Country = "ROB",
                 PostalCode = "R0B 3R4",
-                PhoneNumber = "18008088008",
-                Discount = 0.15
+                PhoneNumber = "18008088008"
             };
         }
 

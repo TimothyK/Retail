@@ -17,8 +17,6 @@ namespace Retail.Services.CustomerServices
         public MailingAddress Address { get; internal set; }
 
         public string PhoneNumber { get; internal set; }
-
-        public double Discount { get; internal set; }
     }
 
     internal class CustomerProfile : Profile

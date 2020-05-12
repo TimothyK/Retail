@@ -3,20 +3,22 @@ using Retail.Data.Abstractions.OrderCreation;
 
 namespace Retail.Services.OrderCreation
 {
-    public class Product
+    public class Product : IProductIdentifier
     {
-        internal int ProductId { get; set; }
-        public string ProductName { get; }
-        public decimal OriginalPrice { get; }
-        public decimal DiscountPrice { get; }
-        public int Quantity { get; }
+        public int ProductId { get; internal set; }
+        public string ProductName { get; internal set; }
+        public decimal OriginalPrice { get; internal set; }
+        public decimal DiscountPrice { get; internal set; }
+        public int Quantity { get; internal set; }
     }
 
     internal class ProductProfile : Profile
     {
         public ProductProfile()
         {
-            CreateMap<ProductDto, Product>();
+            CreateMap<ProductDto, Product>()
+                .ForMember(product => product.OriginalPrice, cfg => cfg.MapFrom(dto => dto.Price))
+                .ForMember(product => product.DiscountPrice, cfg => cfg.MapFrom(dto => dto.SalesPrice));
         }
     }
 

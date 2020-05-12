@@ -17,7 +17,5 @@ namespace Retail.Data.Abstractions.CustomerServices
         public string PostalCode { get; set; }
 
         public string PhoneNumber { get; set; }
-
-        public double Discount { get; set; }
     }
 }
