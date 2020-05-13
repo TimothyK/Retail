@@ -7,6 +7,17 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
     [TestClass]
     public class StoreLocatorTests : BaseTests
     {
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext testContext)
+        {
+            BaseClassInitialize(testContext);
+        }
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            BaseClassCleanup();
+        }
+
         private StoreRepository _repo;
 
         [TestInitialize]

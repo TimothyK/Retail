@@ -1,5 +1,8 @@
-﻿using Retail.Data.Abstractions.StoreLocator;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Retail.Data.Abstractions.StoreLocator;
 using Retail.Data.SqlDb.EfModels;
+using Retail.Data.SqlDb.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +25,9 @@ namespace Retail.Data.SqlDb.StoreLocator
 
         public IEnumerable<StoreDto> GetStores()
         {
-            return Enumerable.Empty<StoreDto>();
+            return _dbRetail.Stores
+                .ProjectTo<StoreDto>(AutoMap.Configuration)
+                .ToList();
         }
     }
 }
