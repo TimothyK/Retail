@@ -1,4 +1,5 @@
 ﻿using Retail.Data.Abstractions.StoreLocator;
+using Retail.Data.SqlDb.EfModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

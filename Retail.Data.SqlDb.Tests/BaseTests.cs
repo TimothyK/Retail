@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Retail.Data.SqlDb.EfModels;
 using System;
 using TimothyK.Testing;
 

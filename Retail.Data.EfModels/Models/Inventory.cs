@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Retail.Data.Models
+namespace Retail.Data.SqlDb.EfModels.Models
 {
     [Table("Inventory")]
     public partial class Inventory

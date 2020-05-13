@@ -8,7 +8,7 @@
    "ModelNamespace": null,
    "OutputContextPath": ".",
    "OutputPath": "Models",
-   "ProjectRootNamespace": "Retail.Data",
+   "ProjectRootNamespace": "Retail.Data.SqlDb.EfModels",
    "SelectedHandlebarsLanguage": 0,
    "SelectedToBeGenerated": 0,
    "Tables": [
