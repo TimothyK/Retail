@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Retail.Data.SqlDb.Database\Retail.Data.SqlDb.Database.csproj" />
+    <ProjectReference Include="..\Retail.Data.SqlDb.EfModels\Retail.Data.SqlDb.EfModels.csproj" />
     <ProjectReference Include="..\Retail.Data.SqlDb\Retail.Data.SqlDb.csproj" />
     <ProjectReference Include="..\TimothyK.Testing\TimothyK.Testing.csproj" />
   </ItemGroup>

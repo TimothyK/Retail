@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30011.22
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Retail.Data.EfModels", "Retail.Data.EfModels\Retail.Data.EfModels.csproj", "{1B93A0E2-60A4-4F65-9788-1D489C0E4DB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Retail.Data.SqlDb.EfModels", "Retail.Data.SqlDb.EfModels\Retail.Data.SqlDb.EfModels.csproj", "{1B93A0E2-60A4-4F65-9788-1D489C0E4DB2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Retail.Services", "Retail.Services\Retail.Services.csproj", "{734B55E0-3E56-4166-BE08-B5EC3054E3D9}"
 EndProject
