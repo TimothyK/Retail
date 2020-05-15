@@ -1,6 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.StoreLocator;
 using Shouldly;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.Tests.StoreLocator
 {
@@ -12,18 +14,27 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
         {
             BaseClassInitialize(testContext);
         }
+
         [ClassCleanup]
         public static void ClassCleanup()
         {
             BaseClassCleanup();
         }
 
+        private SqlServerUnitOfWork _unitOfWork;
         private StoreRepository _repo;
 
         [TestInitialize]
         public void Setup()
         {
-            _repo = new StoreRepository(_dbRetail);
+            _unitOfWork = new SqlServerUnitOfWork(_attchedDatabase.ConnectionString);
+            _repo = new StoreRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
+        }
+
+        [TestCleanup]
+        public void TearDown()
+        {
+            _unitOfWork.Dispose();  //implicit Rollback
         }
 
         [TestMethod]

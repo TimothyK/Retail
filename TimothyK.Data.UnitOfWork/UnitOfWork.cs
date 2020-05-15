@@ -7,12 +7,14 @@ namespace TimothyK.Data.UnitOfWork
 {
     public abstract class UnitOfWork : IDisposable
     {
+        #region Database Connection
+
         protected DbConnection DbConnection { get; private set; }
         protected DbTransaction DbTransaction { get; private set; }
 
-        public TContext CreateDbContext<TContext>() where TContext : DbContext
+        public virtual TContext CreateDbContext<TContext>() where TContext : DbContext
         {
-            var options = CreateOptions<TContext>();
+            var options = CreateOptions<TContext>().Options;
             var dbContext = (TContext)Activator.CreateInstance(typeof(TContext), options);
 
             if (DbConnection != null && dbContext.Database.GetDbConnection() != DbConnection)
@@ -34,19 +36,20 @@ namespace TimothyK.Data.UnitOfWork
             return dbContext;
         }
 
-        protected abstract DbContextOptions<TContext> CreateOptions<TContext>() where TContext : DbContext;
+        protected abstract DbContextOptionsBuilder<TContext> CreateOptions<TContext>() where TContext : DbContext;
 
         public void Commit()
         {
             DbTransaction.Commit();
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             DbTransaction?.Dispose();
             DbConnection?.Dispose();
-            DbTransaction = null;
-            DbConnection = null;
         }
+
+        #endregion
+
     }
 }
