@@ -20,7 +20,7 @@ namespace Retail.Data.SqlDb.StoreLocator
 
         public StoreDto GetStoreById(int storeId)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public IEnumerable<StoreDto> GetStores()

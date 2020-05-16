@@ -9,7 +9,7 @@ using TimothyK.Data.UnitOfWork;
 namespace Retail.Data.SqlDb.Tests.StoreLocator
 {
     [TestClass]
-    public class StoreLocatorTests : BaseTests
+    public class GetStoresTests : BaseTests
     {
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
