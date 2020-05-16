@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.StoreLocator;
+using Retail.Data.SqlDb.Tests.TestRecordFactory;
 using Shouldly;
 using System;
 using System.Collections.Generic;
@@ -50,6 +51,67 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
             store.ShouldBeNull();
         }
 
+        [TestMethod]
+        public void StoreExists_StoreReturned()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            var expected = db.CreateStore();
+            db.SaveChanges();
+
+            //Act
+            var actual = _repo.GetStoreById(expected.StoreId);
+
+            //Assert
+            actual.ShouldNotBeNull();
+        }
+
+        [TestMethod]
+        public void WrongStoreId_Returns()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            var expected = db.CreateStore();
+            db.SaveChanges();
+
+            //Act
+            var actual = _repo.GetStoreById(expected.StoreId + 1);
+
+            //Assert
+            actual.ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void DeactivatedStore_ReturnsNull()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            var expected = db.CreateStore();
+            expected.Active = false;    //deactivated
+            db.SaveChanges();
+
+            //Act
+            var actual = _repo.GetStoreById(expected.StoreId);
+
+            //Assert
+            actual.ShouldBeNull();
+        }
+
+        [TestMethod]
+        public void Store_PropertiesSet()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            var expected = db.CreateStore();
+            db.SaveChanges();
+
+            //Act
+            var actual = _repo.GetStoreById(expected.StoreId);
+
+            //Assert
+            actual.StoreId.ShouldBe(expected.StoreId);
+            actual.StoreName.ShouldBe(expected.StoreName);
+        }
 
     }
 }

@@ -1,9 +1,7 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
+﻿using AutoMapper.QueryableExtensions;
 using Retail.Data.Abstractions.StoreLocator;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.Utilities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,7 +18,10 @@ namespace Retail.Data.SqlDb.StoreLocator
 
         public StoreDto GetStoreById(int storeId)
         {
-            return null;
+            return _dbRetail.Stores
+                .Where(store => store.StoreId == storeId)
+                .ProjectTo<StoreDto>(AutoMap.Configuration)
+                .SingleOrDefault();
         }
 
         public IEnumerable<StoreDto> GetStores()
