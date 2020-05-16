@@ -1,6 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.SqlDb.EfModels;
-using Retail.Data.SqlDb.EfModels.Models;
 using Retail.Data.SqlDb.StoreLocator;
 using Retail.Data.SqlDb.Tests.TestRecordFactory;
 using Shouldly;
@@ -66,6 +65,22 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
             var actual = stores.Single();
             actual.StoreId.ShouldBe(expected.StoreId);
             actual.StoreName.ShouldBe(expected.StoreName);                
+        }
+
+        [TestMethod]
+        public void DeactiveStore_NotReturned()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            var store = db.CreateStore();
+            store.Active = false;
+            db.SaveChanges();
+
+            //Act
+            var stores = _repo.GetStores().ToList();
+
+            //Assert
+            stores.ShouldBeEmpty();
         }
     }
 }
