@@ -51,7 +51,7 @@ namespace Retail.Services.UnitTests.OrderCreation
                 Quantity = 50
             };
 
-            _repo.Setup(repo => repo.GetAvailableProducts(_customer, _store))
+            _repo.Setup(repo => repo.GetAvailableProducts(_store))
                 .Returns(new[] { apple, orange });
         }
 

@@ -6,7 +6,7 @@ namespace Retail.Data.Abstractions.OrderCreation
     {
         double GetCustomerDiscount(ICustomerIdentifier customer);
 
-        IEnumerable<ProductDto> GetAvailableProducts(ICustomerIdentifier customer, IStoreIdentifier store);
+        IEnumerable<ProductDto> GetAvailableProducts(IStoreIdentifier store);
 
         void CreateOrder(OrderDto order);
 

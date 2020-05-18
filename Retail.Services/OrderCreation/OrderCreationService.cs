@@ -29,7 +29,7 @@ namespace Retail.Services.OrderCreation
         {
             var discount = _repo.GetCustomerDiscount(order.Customer);
 
-            return _repo.GetAvailableProducts(order.Customer, order.Store)
+            return _repo.GetAvailableProducts(order.Store)
                 .Select(_mapper.Map<Product>)
                 .Select(product => ApplyDiscount(product, discount))
                 .ToList();

@@ -6,6 +6,7 @@ using Retail.Services.OrderCreation;
 using Retail.Services.StoreLocator;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Retail.Services.UnitTests.OrderCreation
@@ -31,31 +32,35 @@ namespace Retail.Services.UnitTests.OrderCreation
             _service = new OrderCreationService(_repo.Object);
         }
 
-        private void SetCustomerDiscount(ICustomerIdentifier customer, double discount)
+        private void SetupCustomerDiscount(ICustomerIdentifier customer, double discount)
         {
             _repo
                 .Setup(repo => repo.GetCustomerDiscount(customer))
                 .Returns(discount);
         }
+        
+        private void SetupGetAvailableProducts(params ProductDto[] products)
+        {
+            _repo.Setup(repo => repo.GetAvailableProducts(_store))
+                .Returns(products);
+        }
 
 
         [TestMethod]
-        public void VerifyCalledWithCustomerAndStore()
+        public void VerifyCalledWithStore()
         {
             //Act            
             var products = _service.GetAvailableProducts(_order);
 
             //Assert
-            _repo.Verify(repo => repo.GetAvailableProducts(_customer, _store));
+            _repo.Verify(repo => repo.GetAvailableProducts(_store));
         }
 
         [TestMethod]
         public void EmptyProducts_ReturnsEmpty()
         {
             //Arrange
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(Enumerable.Empty<ProductDto>());
+            SetupGetAvailableProducts();
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -69,9 +74,7 @@ namespace Retail.Services.UnitTests.OrderCreation
         {
             //Arrange
             var dto = TypicalProduct();
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -98,9 +101,7 @@ namespace Retail.Services.UnitTests.OrderCreation
             //Arrange
             var dto = TypicalProduct();
             dto.ProductId = productId;
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -118,9 +119,7 @@ namespace Retail.Services.UnitTests.OrderCreation
             //Arrange
             var dto = TypicalProduct();
             dto.ProductName = productName;
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -139,9 +138,7 @@ namespace Retail.Services.UnitTests.OrderCreation
             var price = Convert.ToDecimal(input);
             var dto = TypicalProduct();
             dto.Price = price;
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -159,9 +156,7 @@ namespace Retail.Services.UnitTests.OrderCreation
             //Arrange
             var dto = TypicalProduct();
             dto.Quantity = quantity;
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -177,10 +172,8 @@ namespace Retail.Services.UnitTests.OrderCreation
             //Arrange
             var dto = TypicalProduct();
             dto.SalesPrice = dto.Price;
-            SetCustomerDiscount(_customer, 0.0);
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupCustomerDiscount(_customer, 0.0);
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -197,10 +190,8 @@ namespace Retail.Services.UnitTests.OrderCreation
             var dto = TypicalProduct();
             dto.Price = 19.99m;
             dto.SalesPrice = 15.99m;
-            SetCustomerDiscount(_customer, 0.0);
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupCustomerDiscount(_customer, 0.0);
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);
@@ -217,10 +208,8 @@ namespace Retail.Services.UnitTests.OrderCreation
             var dto = TypicalProduct();
             dto.Price = 10.00m;
             dto.SalesPrice = dto.Price;
-            SetCustomerDiscount(_customer, 0.1);  //10%
-            _repo
-                .Setup(repo => repo.GetAvailableProducts(_customer, _store))
-                .Returns(new[] { dto });
+            SetupCustomerDiscount(_customer, 0.1);  //10%
+            SetupGetAvailableProducts(dto);
 
             //Act            
             var products = _service.GetAvailableProducts(_order);

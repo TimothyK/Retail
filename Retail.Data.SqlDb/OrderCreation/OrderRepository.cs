@@ -26,7 +26,7 @@ namespace Retail.Data.SqlDb.OrderCreation
             throw new NotImplementedException();
         }
 
-        public IEnumerable<ProductDto> GetAvailableProducts(ICustomerIdentifier customer, IStoreIdentifier store)
+        public IEnumerable<ProductDto> GetAvailableProducts(IStoreIdentifier store)
         {
             throw new NotImplementedException();
         }
