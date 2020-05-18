@@ -3,25 +3,27 @@ using Retail.Data.SqlDb.EfModels.Models;
 
 namespace Retail.Data.SqlDb.Tests.TestRecordFactory
 {
-    internal static class StoreFactory
+    internal static class CustomerFactory
     {
-        public static Store CreateStore(this RetailDbContext db)
+        internal static Customer CreateCustomer(this RetailDbContext db)
         {
             var id = IdFactory.Next();
-            var store = new Store
+            var customer = new Customer
             {
+                FirstName = $"Bob{id}",
+                LastName = $"Robertson{id}",
                 Address = $"{id} Main Street",
                 City = $"{id}ville",
                 Province = $"{id} District",
                 Country = $"{id}land",
                 PostalCode = $"{id}",
                 PhoneNumber = $"({id}) {id}-{id}",
-                StoreName = $"Store {id}",
                 Active = true,
+                Discount = 0.0
             };
-            db.Add(store);
+            db.Add(customer);
 
-            return store;
+            return customer;
         }
     }
 }
