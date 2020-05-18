@@ -4,7 +4,6 @@ using Retail.Data.SqlDb.StoreLocator;
 using Retail.Data.SqlDb.Tests.TestRecordFactory;
 using Shouldly;
 using System.Linq;
-using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.Tests.StoreLocator
 {
@@ -23,20 +22,19 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
             BaseClassCleanup();
         }
 
-        private SqlServerUnitOfWork _unitOfWork;
         private StoreRepository _repo;
 
         [TestInitialize]
         public void Setup()
         {
-            _unitOfWork = new SqlServerUnitOfWork(_attchedDatabase.ConnectionString);
+            TestInitialize();
             _repo = new StoreRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
         }
 
         [TestCleanup]
         public void TearDown()
         {
-            _unitOfWork.Dispose();  //implicit Rollback
+            TestCleanup();
         }
 
         [TestMethod]

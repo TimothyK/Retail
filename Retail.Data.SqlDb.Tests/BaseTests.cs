@@ -11,15 +11,27 @@ namespace Retail.Data.SqlDb.Tests
     {
         protected static LocalDbAttacher _attchedDatabase;
 
-        public static void BaseClassInitialize(TestContext testContext)
+        protected static void BaseClassInitialize(TestContext testContext)
         {
             _attchedDatabase = new LocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName))
                 .AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
         }
 
-        public static void BaseClassCleanup()
+        protected static void BaseClassCleanup()
         {
             _attchedDatabase.DropDatabase();
+        }
+
+        protected UnitOfWork _unitOfWork;
+
+        protected void TestInitialize()
+        {
+            _unitOfWork = new SqlServerUnitOfWork(_attchedDatabase.ConnectionString);
+        }
+
+        protected void TestCleanup()
+        {
+            _unitOfWork.Dispose(); //implicit Rollback
         }
     }
 }
