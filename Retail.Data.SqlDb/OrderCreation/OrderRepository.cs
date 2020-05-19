@@ -1,5 +1,8 @@
-﻿using Retail.Data.Abstractions.OrderCreation;
+﻿using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using Retail.Data.Abstractions.OrderCreation;
 using Retail.Data.SqlDb.EfModels;
+using Retail.Data.SqlDb.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +31,9 @@ namespace Retail.Data.SqlDb.OrderCreation
 
         public IEnumerable<ProductDto> GetAvailableProducts(IStoreIdentifier store)
         {
-            throw new NotImplementedException();
+            return _dbRetail.Products
+                .Include(product => product.Inventory)
+                .ProjectTo<ProductDto>(AutoMap.Configuration);
         }
 
         public double GetCustomerDiscount(ICustomerIdentifier customer)
