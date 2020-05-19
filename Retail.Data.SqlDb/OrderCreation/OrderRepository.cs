@@ -30,7 +30,7 @@ namespace Retail.Data.SqlDb.OrderCreation
 
         public void DecrementProductInventory(IProductIdentifier product, IStoreIdentifier store, int quantity)
         {
-            throw new NotImplementedException();
+            _dbRetail.Database.ExecuteSqlInterpolated($"Update dbo.Inventory Set Quantity = Quantity - {quantity} Where (ProductId = {product.ProductId}) And (StoreId = {store.StoreId})");
         }
 
         public IEnumerable<ProductDto> GetAvailableProducts(IStoreIdentifier store)
