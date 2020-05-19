@@ -109,7 +109,64 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
             actualProduct.Quantity.ShouldBe(quantity);
         }
 
+        [TestMethod]
+        public void MultipleProducts_OnlyProductsAtStoreAreReturned()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            var store2 = db.CreateStore();
+            var product1 = db.CreateProduct()
+                .AddInventory(_store, 10)
+                .AddInventory(store2, 99);
+            var product2 = db.CreateProduct()
+                .AddInventory(_store, 20);
+            db.CreateProduct()
+                .AddInventory(store2, 30);
+            db.SaveChanges();
 
+            //Act
+            var products = GetAvailableProducts().ToList();
+
+            //Assert
+            products.Count.ShouldBe(2);
+            products.Single(product => product.ProductId == product1.ProductId).Quantity.ShouldBe(10);
+            products.Single(product => product.ProductId == product2.ProductId).Quantity.ShouldBe(20);
+        }
+
+        [TestMethod]
+        public void DeactivatedProduct_NotReturned()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            const int quantity = 100;
+            var product = db.CreateProduct()
+                .AddInventory(_store, quantity);
+            product.Active = false;     //Deactivate
+            db.SaveChanges();
+
+            //Act
+            var products = GetAvailableProducts();
+
+            //Assert
+            products.ShouldBeEmpty();
+        }
+
+        [TestMethod]
+        public void ZeroQuantity_NotReturned()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            const int quantity = 0;     //No quantity
+            var product = db.CreateProduct()
+                .AddInventory(_store, quantity);
+            db.SaveChanges();
+
+            //Act
+            var products = GetAvailableProducts();
+
+            //Assert
+            products.ShouldBeEmpty();
+        }
 
     }
 }

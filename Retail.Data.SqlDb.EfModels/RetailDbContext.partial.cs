@@ -12,6 +12,15 @@ namespace Retail.Data.SqlDb.EfModels
 
             modelBuilder.Entity<Store>()
                 .HasQueryFilter(store => store.Active == null || store.Active.Value);
+
+            modelBuilder.Entity<Inventory>()
+                .HasOne(inventory => inventory.Product)
+                .WithMany(product => product.Inventory)
+                .HasForeignKey(inventory => inventory.ProductId);
+            modelBuilder.Entity<Inventory>()
+                .HasOne(inventory => inventory.Store)
+                .WithMany(store => store.Inventory)
+                .HasForeignKey(inventory => inventory.StoreId);
         }
     }
 }

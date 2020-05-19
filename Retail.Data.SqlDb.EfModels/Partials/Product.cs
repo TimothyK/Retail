@@ -7,5 +7,6 @@ namespace Retail.Data.SqlDb.EfModels.Models
     {
         [InverseProperty(nameof(Models.Inventory.Product))]
         public virtual ICollection<Inventory> Inventory { get; set; } = new HashSet<Inventory>();
+
     }
 }
