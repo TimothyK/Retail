@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Retail.Data.Abstractions.OrderCreation;
 using Retail.Data.SqlDb.EfModels;
+using Retail.Data.SqlDb.EfModels.Models;
+using Retail.Data.SqlDb.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +23,9 @@ namespace Retail.Data.SqlDb.OrderCreation
 
         public void CreateOrder(OrderDto order)
         {
-            throw new NotImplementedException();
+            var entity = AutoMap.Mapper.Map<Order>(order);
+            _dbRetail.Orders.Add(entity);
+            _dbRetail.SaveChanges();
         }
 
         public void DecrementProductInventory(IProductIdentifier product, IStoreIdentifier store, int quantity)
