@@ -61,7 +61,7 @@ namespace Retail.Data.SqlDb.Tests
         protected static void BaseClassCleanup()
         {
             _testClassContext?.Dispose();
-            _attchedDatabase.DropDatabase();
+            _attchedDatabase?.DropDatabase();
         }
 
         protected UnitOfWork _unitOfWork;

@@ -24,17 +24,20 @@ namespace TimothyK.Data.UnitOfWork
             if (DbConnection != null && dbContext.Database.GetDbConnection() != DbConnection)
             {
                 throw new InvalidOperationException($"DbContext was created with a different database connection that was previously used.  Check {nameof(CreateOptionsBuilder)} implementation");
-            }
-            DbConnection = dbContext.Database.GetDbConnection();
+            }            
+            if (!dbContext.Database.IsInMemory())
+            {
+                DbConnection = dbContext.Database.GetDbConnection();
 
-            if (DbTransaction == null)
-            {
-                dbContext.Database.BeginTransaction();
-                DbTransaction = dbContext.Database.CurrentTransaction.GetDbTransaction();
-            }
-            else
-            {
-                dbContext.Database.UseTransaction(DbTransaction);
+                if (DbTransaction == null)
+                {
+                    dbContext.Database.BeginTransaction();
+                    DbTransaction = dbContext.Database.CurrentTransaction.GetDbTransaction();
+                }
+                else
+                {
+                    dbContext.Database.UseTransaction(DbTransaction);
+                }
             }
 
             return dbContext;
