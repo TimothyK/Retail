@@ -3,7 +3,7 @@ using Retail.Data.Abstractions.OrderCreation;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.EfModels.Models;
 using Retail.Data.SqlDb.OrderCreation;
-using Retail.Data.SqlDb.Tests.TestRecordFactory;
+using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System.Linq;
 
@@ -170,5 +170,23 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
             products.ShouldBeEmpty();
         }
 
+        [TestMethod]
+        public void NoSalesPrice_SalesPriceSameAsOriginal()
+        {
+            //Arrange
+            var db = _unitOfWork.CreateDbContext<RetailDbContext>();
+            const int quantity = 100;
+            db.CreateProduct()
+                .With(product => product.SalesPrice = null)
+                .AddInventory(_store, quantity);
+            db.SaveChanges();
+
+            //Act
+            var products = GetAvailableProducts();
+
+            //Assert
+            var product = products.Single();
+            product.SalesPrice.ShouldBe(product.Price);
+        }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.StoreLocator;
-using Retail.Data.SqlDb.Tests.TestRecordFactory;
+using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System.Linq;
 

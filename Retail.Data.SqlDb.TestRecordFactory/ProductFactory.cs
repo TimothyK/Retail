@@ -1,9 +1,9 @@
 ﻿using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.EfModels.Models;
 
-namespace Retail.Data.SqlDb.Tests.TestRecordFactory
+namespace Retail.Data.SqlDb.TestRecordFactory
 {
-    internal static class ProductFactory
+    public static class ProductFactory
     {
         public static Product CreateProduct(this RetailDbContext db)
         {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 
-namespace Retail.Data.SqlDb.Tests.TestRecordFactory
+namespace Retail.Data.SqlDb.TestRecordFactory
 {
-    internal static class IdFactory
+    public static class IdFactory
     {
         private static int _id;
 

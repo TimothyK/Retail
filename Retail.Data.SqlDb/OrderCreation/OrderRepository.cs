@@ -41,7 +41,7 @@ namespace Retail.Data.SqlDb.OrderCreation
                 .Query<ProductDto>("Select product.ProductId" +
                 ", product.ProductName" +
                 ", product.Price" +
-                ", product.SalesPrice" +
+                ", IsNull(product.SalesPrice, product.Price) As SalesPrice" +
                 ", inventory.Quantity" +
                 " From dbo.Products product" +
                 " Inner Join dbo.Inventory inventory On (product.ProductId = inventory.ProductId)" +

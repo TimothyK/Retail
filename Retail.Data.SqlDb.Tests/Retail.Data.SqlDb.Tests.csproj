@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Retail.Data.SqlDb.Database\Retail.Data.SqlDb.Database.csproj" />
     <ProjectReference Include="..\Retail.Data.SqlDb.EfModels\Retail.Data.SqlDb.EfModels.csproj" />
+    <ProjectReference Include="..\Retail.Data.SqlDb.TestRecordFactory\Retail.Data.SqlDb.TestRecordFactory.csproj" />
     <ProjectReference Include="..\Retail.Data.SqlDb\Retail.Data.SqlDb.csproj" />
     <ProjectReference Include="..\TimothyK.Data.UnitOfWork\TimothyK.Data.UnitOfWork.csproj" />
   </ItemGroup>

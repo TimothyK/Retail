@@ -1,11 +1,11 @@
 ﻿using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.EfModels.Models;
 
-namespace Retail.Data.SqlDb.Tests.TestRecordFactory
+namespace Retail.Data.SqlDb.TestRecordFactory
 {
-    internal static class CustomerFactory
+    public static class CustomerFactory
     {
-        internal static Customer CreateCustomer(this RetailDbContext db)
+        public static Customer CreateCustomer(this RetailDbContext db)
         {
             var id = IdFactory.Next();
             var customer = new Customer

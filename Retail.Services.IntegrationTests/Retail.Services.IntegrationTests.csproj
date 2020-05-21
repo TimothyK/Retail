@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="2.1.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.0" />
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+    <PackageReference Include="Shouldly" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Retail.Data.SqlDb.Database\Retail.Data.SqlDb.Database.csproj" />
+    <ProjectReference Include="..\Retail.Data.SqlDb.TestRecordFactory\Retail.Data.SqlDb.TestRecordFactory.csproj" />
+    <ProjectReference Include="..\Retail.Data.SqlDb\Retail.Data.SqlDb.csproj" />
+    <ProjectReference Include="..\Retail.Services\Retail.Services.csproj" />
+    <ProjectReference Include="..\TimothyK.Data.UnitOfWork\TimothyK.Data.UnitOfWork.csproj" />
+  </ItemGroup>
+
+</Project>

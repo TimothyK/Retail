@@ -4,7 +4,7 @@ using Retail.Data.Abstractions.OrderCreation;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.EfModels.Models;
 using Retail.Data.SqlDb.OrderCreation;
-using Retail.Data.SqlDb.Tests.TestRecordFactory;
+using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;

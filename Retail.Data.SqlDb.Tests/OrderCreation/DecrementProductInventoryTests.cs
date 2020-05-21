@@ -3,7 +3,7 @@ using Retail.Data.Abstractions.OrderCreation;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.EfModels.Models;
 using Retail.Data.SqlDb.OrderCreation;
-using Retail.Data.SqlDb.Tests.TestRecordFactory;
+using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,8 +80,8 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
             Store store2;
             Product product1;
             Product product2;
-            using (var db = _unitOfWork.CreateDbContext<RetailDbContext>())
             {
+                var db = _unitOfWork.CreateDbContext<RetailDbContext>();
                 store1 = db.CreateStore();
                 store2 = db.CreateStore();
                 product1 = db.CreateProduct()
@@ -97,8 +97,8 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
             _repo.DecrementProductInventory((ProductIdentifier)product2, (StoreIdentifier)store2, 20);
 
             //Assert
-            using (var db = _unitOfWork.CreateDbContext<RetailDbContext>())
             {
+                var db = _unitOfWork.CreateDbContext<RetailDbContext>();
                 var storeIds = new[] { store1, store2 }.Select(store => store.StoreId);
                 var inventories = db.Inventories
                     .Where(inventory => storeIds.Contains(inventory.StoreId))
@@ -108,7 +108,6 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
                     .QuantityShouldBe(product1, store2, 200)
                     .QuantityShouldBe(product2, store1, 300)
                     .QuantityShouldBe(product2, store2, 380);
-
             }
 
         }
