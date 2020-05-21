@@ -12,7 +12,7 @@ namespace TimothyK.Data.UnitOfWork
             _connectionStringBuilder = connectionStringBuilder;
         }
 
-        protected override DbContextOptionsBuilder<TContext> CreateOptions<TContext>()
+        protected override DbContextOptionsBuilder<TContext> CreateOptionsBuilder<TContext>()
         {
             var contextBuilder = new DbContextOptionsBuilder<TContext>();
             if (DbConnection == null)

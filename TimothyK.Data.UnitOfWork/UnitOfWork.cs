@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System;
+using System.Collections.Generic;
 using System.Data.Common;
 
 namespace TimothyK.Data.UnitOfWork
@@ -14,12 +15,15 @@ namespace TimothyK.Data.UnitOfWork
 
         public virtual TContext CreateDbContext<TContext>() where TContext : DbContext
         {
-            var options = CreateOptions<TContext>().Options;
-            var dbContext = (TContext)Activator.CreateInstance(typeof(TContext), options);
+            var builder = CreateOptionsBuilder<TContext>();
+            foreach (var addOptions in AddOptions)
+                addOptions.Invoke(builder);
+
+            var dbContext = (TContext)Activator.CreateInstance(typeof(TContext), builder.Options);
 
             if (DbConnection != null && dbContext.Database.GetDbConnection() != DbConnection)
             {
-                throw new InvalidOperationException($"DbContext was created with a different database connection that was previously used.  Check {nameof(CreateOptions)} implementation");
+                throw new InvalidOperationException($"DbContext was created with a different database connection that was previously used.  Check {nameof(CreateOptionsBuilder)} implementation");
             }
             DbConnection = dbContext.Database.GetDbConnection();
 
@@ -36,7 +40,16 @@ namespace TimothyK.Data.UnitOfWork
             return dbContext;
         }
 
-        protected abstract DbContextOptionsBuilder<TContext> CreateOptions<TContext>() where TContext : DbContext;
+        protected abstract DbContextOptionsBuilder<TContext> CreateOptionsBuilder<TContext>() where TContext : DbContext;
+
+        private readonly List<Func<DbContextOptionsBuilder, DbContextOptionsBuilder>> AddOptions = 
+            new List<Func<DbContextOptionsBuilder, DbContextOptionsBuilder>>();
+
+        public UnitOfWork AddBuilderOptions(Func<DbContextOptionsBuilder, DbContextOptionsBuilder> addOptions)
+        {
+            AddOptions.Add(addOptions);
+            return this;
+        }
 
         public void Commit()
         {
