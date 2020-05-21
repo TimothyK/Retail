@@ -28,7 +28,7 @@ namespace Retail.Data.SqlDb.Tests
             _testRunId = Guid.NewGuid();
             
             var loggerConfig = new LoggerConfiguration()
-                .MinimumLevel.Debug()
+                .MinimumLevel.Information()
                 .Enrich.WithProperty("TestRunId", _testRunId)
                 .Enrich.WithThreadId()
                 .Enrich.FromLogContext()
@@ -37,15 +37,13 @@ namespace Retail.Data.SqlDb.Tests
                 loggerConfig.WriteTo.Seq("http://localhost:5341");
             Log.Logger = loggerConfig.CreateLogger();
 
-            Log.Information("Hello");
-
             _loggerFactory = new LoggerFactory()
                 .AddSerilog();            
         }
 
         protected static LocalDbAttacher _attchedDatabase;
 
-        private static TestContext _testContext;
+        public abstract TestContext TestContext { get; set; }
         private static IDisposable _testClassContext;
         private static IDisposable _testMethodContext;
 
@@ -54,8 +52,7 @@ namespace Retail.Data.SqlDb.Tests
             _attchedDatabase = new LocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName))
                 .AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
 
-            _testContext = testContext;
-            _testClassContext = LogContext.PushProperty("TestClass", _testContext.FullyQualifiedTestClassName);
+            _testClassContext = LogContext.PushProperty("TestClass", testContext.FullyQualifiedTestClassName);
         }
 
         protected static void BaseClassCleanup()
@@ -68,11 +65,14 @@ namespace Retail.Data.SqlDb.Tests
 
         protected void TestInitialize()
         {
-            _testMethodContext = LogContext.PushProperty("TestMethod", _testContext.TestName);
-            if (string.IsNullOrEmpty(_seqAddress))
-                Log.Information("Install Seq for enhanced logging.  https://datalust.co/download");
-            else
-                Log.Information("TestInitialize - Details at {Url}", $"{_seqAddress}/#/events?filter=" + WebUtility.UrlEncode($"TestRunId = '{_testRunId}' && TestClass = '{_testContext.FullyQualifiedTestClassName}' && TestMethod = '{_testContext.TestName}'"));
+            _testMethodContext = LogContext.PushProperty("TestMethod", TestContext.TestName);
+            using (LogContext.PushProperty("StackTrace", new System.Diagnostics.StackTrace()))
+            {
+                if (string.IsNullOrEmpty(_seqAddress))
+                    Log.Information("Install Seq for enhanced logging.  https://datalust.co/download");
+                else
+                    Log.Information("TestInitialize - Details at {Url}", $"{_seqAddress}/#/events?filter=" + WebUtility.UrlEncode($"TestRunId = '{_testRunId}' && TestClass = '{TestContext.FullyQualifiedTestClassName}' && TestMethod = '{TestContext.TestName}'"));
+            }
 
             _unitOfWork = new SqlServerUnitOfWork(_attchedDatabase.ConnectionString)
                 .AddBuilderOptions(builder => builder.UseLoggerFactory(_loggerFactory))

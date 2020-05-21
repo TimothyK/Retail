@@ -14,6 +14,8 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
     public class DecrementProductInventoryTests : BaseTests
     {
         #region Setup
+        public override TestContext TestContext { get; set; }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {

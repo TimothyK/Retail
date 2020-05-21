@@ -9,6 +9,9 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
     [TestClass]
     public class GetStoreByIdTests : BaseTests
     {
+        #region Setup
+        public override TestContext TestContext { get; set; }
+
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
@@ -35,6 +38,7 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
         {
             TestCleanup();
         }
+        #endregion
 
         [TestMethod]
         public void NoStores_ReturnsNull()
