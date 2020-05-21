@@ -72,7 +72,7 @@ namespace Retail.Data.SqlDb.Tests
             if (string.IsNullOrEmpty(_seqAddress))
                 Log.Information("Install Seq for enhanced logging.  https://datalust.co/download");
             else
-                Log.Information("TestInitialize - Details at {Url}", $"{_seqAddress}/#/events?filter=" + WebUtility.UrlEncode($"TestRunId = '{_testRunId}' && TestClass = '{_testContext.FullyQualifiedTestClassName}' && TestMethod = '{_testContext.TestName}'"));           
+                Log.Information("TestInitialize - Details at {Url}", $"{_seqAddress}/#/events?filter=" + WebUtility.UrlEncode($"TestRunId = '{_testRunId}' && TestClass = '{_testContext.FullyQualifiedTestClassName}' && TestMethod = '{_testContext.TestName}'"));
 
             _unitOfWork = new SqlServerUnitOfWork(_attchedDatabase.ConnectionString)
                 .AddBuilderOptions(builder => builder.UseLoggerFactory(_loggerFactory))
