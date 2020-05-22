@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Retail.Data.SqlDb.Database;
 using Serilog;
 using Serilog.Context;
 using System;
@@ -15,7 +16,7 @@ namespace Retail.Data.SqlDb.Tests
     [TestClass]
     public abstract class BaseTests
     {
-        private static readonly ILoggerFactory _loggerFactory;
+        internal static ILoggerFactory LoggerFactory { get; }
         private static readonly Guid _testRunId;
         private static readonly string _seqAddress;
 
@@ -37,31 +38,23 @@ namespace Retail.Data.SqlDb.Tests
                 loggerConfig.WriteTo.Seq("http://localhost:5341");
             Log.Logger = loggerConfig.CreateLogger();
 
-            _loggerFactory = new LoggerFactory()
+            LoggerFactory = new LoggerFactory()
                 .AddSerilog();            
         }
 
-        protected static LocalDbAttacher _attchedDatabase;
-
         public abstract TestContext TestContext { get; set; }
         private static IDisposable _testClassContext;
-        private static IDisposable _testMethodContext;
+        private IDisposable _testMethodContext;
 
         protected static void BaseClassInitialize(TestContext testContext)
         {
-            _attchedDatabase = new LocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName))
-                .AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
-
             _testClassContext = LogContext.PushProperty("TestClass", testContext.FullyQualifiedTestClassName);
         }
 
         protected static void BaseClassCleanup()
         {
             _testClassContext?.Dispose();
-            _attchedDatabase?.DropDatabase();
         }
-
-        protected UnitOfWork _unitOfWork;
 
         protected void TestInitialize()
         {
@@ -73,16 +66,11 @@ namespace Retail.Data.SqlDb.Tests
                 else
                     Log.Information("TestInitialize - Details at {Url}", $"{_seqAddress}/#/events?filter=" + WebUtility.UrlEncode($"TestRunId = '{_testRunId}' && TestClass = '{TestContext.FullyQualifiedTestClassName}' && TestMethod = '{TestContext.TestName}'"));
             }
-
-            _unitOfWork = new SqlServerUnitOfWork(_attchedDatabase.ConnectionString)
-                .AddBuilderOptions(builder => builder.UseLoggerFactory(_loggerFactory))
-                .AddBuilderOptions(builder => builder.EnableSensitiveDataLogging());
         }
 
         protected void TestCleanup()
         {
             _testMethodContext?.Dispose();
-            _unitOfWork.Dispose(); //implicit Rollback
         }
     }
 }

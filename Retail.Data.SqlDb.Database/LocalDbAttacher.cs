@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace TimothyK.Data.UnitOfWork
+namespace TimothyK.Data
 {
     public class LocalDbAttacher
     {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace TimothyK.Data.UnitOfWork
+namespace TimothyK.Data
 {
     /// <summary>
     /// DbContext for the master database of a SQL Server database

@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.Abstractions.CustomerServices;
 using Retail.Data.SqlDb.CustomerServices;
+using Retail.Data.SqlDb.Database;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
@@ -13,16 +14,21 @@ namespace Retail.Data.SqlDb.Tests.CustomerServices
     {
         #region Setup
         public override TestContext TestContext { get; set; }
+        private static RetailLocalDbAttacher _attachedDatabase;
+        private RetailUnitOfWork _unitOfWork;
+
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
             BaseClassInitialize(testContext);
+            _attachedDatabase = new RetailLocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName));
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            _attachedDatabase?.DropDatabase();
             BaseClassCleanup();
         }
 
@@ -32,12 +38,14 @@ namespace Retail.Data.SqlDb.Tests.CustomerServices
         public void Setup()
         {
             TestInitialize();
+            _unitOfWork = new RetailUnitOfWork(_attachedDatabase);
             _repo = new CustomerRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
         }
 
         [TestCleanup]
         public void TearDown()
         {
+            _unitOfWork?.Dispose();  //implicit Rollback
             TestCleanup();
         }
 

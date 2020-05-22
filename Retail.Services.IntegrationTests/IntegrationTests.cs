@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.SqlDb.CustomerServices;
+using Retail.Data.SqlDb.Database;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.OrderCreation;
 using Retail.Data.SqlDb.StoreLocator;
@@ -17,13 +18,12 @@ namespace Retail.Services.IntegrationTests
     [TestClass]
     public class IntegrationTests
     {
-        private static LocalDbAttacher _attachedDatabase;
+        private static RetailLocalDbAttacher _attachedDatabase;
 
         [ClassInitialize]
         public static void ClassSetup(TestContext testContext)
         {
-            _attachedDatabase = new LocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName))
-                .AttachDatabase(@"Databases\Retail.mdf", @"Databases\Retail_log.ldf");
+            _attachedDatabase = new RetailLocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName));
         }
 
         [ClassCleanup]

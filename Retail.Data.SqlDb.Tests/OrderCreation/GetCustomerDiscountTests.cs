@@ -1,9 +1,11 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Retail.Data.Abstractions.OrderCreation;
+using Retail.Data.SqlDb.Database;
 using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.OrderCreation;
 using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
+using System;
 
 namespace Retail.Data.SqlDb.Tests.OrderCreation
 {
@@ -12,16 +14,20 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
     {
         #region Setup
         public override TestContext TestContext { get; set; }
+        private static RetailLocalDbAttacher _attachedDatabase;
+        private RetailUnitOfWork _unitOfWork;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
             BaseClassInitialize(testContext);
+            _attachedDatabase = new RetailLocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName));
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            _attachedDatabase?.DropDatabase();
             BaseClassCleanup();
         }
 
@@ -31,12 +37,14 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
         public void Setup()
         {
             TestInitialize();
+            _unitOfWork = new RetailUnitOfWork(_attachedDatabase);
             _repo = new OrderRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
         }
 
         [TestCleanup]
         public void TearDown()
         {
+            _unitOfWork?.Dispose();  //implicit Rollback
             TestCleanup();
         }
 

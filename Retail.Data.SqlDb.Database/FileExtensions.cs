@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace TimothyK.Data.UnitOfWork
+namespace TimothyK.Data
 {
     internal static class FileExtensions
     {
