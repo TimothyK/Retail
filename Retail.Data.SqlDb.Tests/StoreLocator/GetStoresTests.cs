@@ -6,6 +6,7 @@ using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System;
 using System.Linq;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.Tests.StoreLocator
 {
@@ -14,20 +15,17 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
     {
         #region Setup
         public override TestContext TestContext { get; set; }
-        private static RetailLocalDbAttacher _attachedDatabase;
-        private RetailUnitOfWork _unitOfWork;
+        private UnitOfWork _unitOfWork;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
             BaseClassInitialize(testContext);
-            _attachedDatabase = new RetailLocalDbAttacher(Type.GetType(testContext.FullyQualifiedTestClassName));
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _attachedDatabase?.DropDatabase();
             BaseClassCleanup();
         }
 
@@ -37,7 +35,7 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
         public void Setup()
         {
             TestInitialize();
-            _unitOfWork = new RetailUnitOfWork(_attachedDatabase);
+            _unitOfWork = new InMemoryUnitOfWork();
             _repo = new StoreRepository(_unitOfWork);
         }
 

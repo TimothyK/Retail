@@ -6,6 +6,8 @@ using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System;
+using TimothyK.Data;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.Tests.CustomerServices
 {
@@ -14,8 +16,8 @@ namespace Retail.Data.SqlDb.Tests.CustomerServices
     {
         #region Setup
         public override TestContext TestContext { get; set; }
-        private static RetailLocalDbAttacher _attachedDatabase;
-        private RetailUnitOfWork _unitOfWork;
+        private static LocalDbAttacher _attachedDatabase;
+        private UnitOfWork _unitOfWork;
 
 
         [ClassInitialize]

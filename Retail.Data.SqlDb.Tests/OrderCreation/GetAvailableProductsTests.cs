@@ -8,6 +8,8 @@ using Retail.Data.SqlDb.TestRecordFactory;
 using Shouldly;
 using System;
 using System.Linq;
+using TimothyK.Data;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.Tests.OrderCreation
 {
@@ -16,8 +18,8 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
     {
         #region Setup
         public override TestContext TestContext { get; set; }
-        private static RetailLocalDbAttacher _attachedDatabase;
-        private RetailUnitOfWork _unitOfWork;
+        private static LocalDbAttacher _attachedDatabase;
+        private UnitOfWork _unitOfWork;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
