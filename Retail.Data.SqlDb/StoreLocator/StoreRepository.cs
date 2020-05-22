@@ -4,21 +4,24 @@ using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.Utilities;
 using System.Collections.Generic;
 using System.Linq;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.StoreLocator
 {
     public class StoreRepository : IStoreRepository
     {
-        private readonly RetailDbContext _dbRetail;
+        private readonly UnitOfWork _unitOfWork;
 
-        public StoreRepository(RetailDbContext dbRetail)
+        public StoreRepository(UnitOfWork unitOfWork)
         {
-            _dbRetail = dbRetail;
+            _unitOfWork = unitOfWork;
         }
 
+        private RetailDbContext CreateDbContext() => _unitOfWork.CreateDbContext<RetailDbContext>();
+
         public StoreDto GetStoreById(int storeId)
-        {
-            return _dbRetail.Stores
+        {            
+            return CreateDbContext().Stores
                 .Where(store => store.StoreId == storeId)
                 .ProjectTo<StoreDto>(AutoMap.Configuration)
                 .SingleOrDefault();
@@ -26,7 +29,7 @@ namespace Retail.Data.SqlDb.StoreLocator
 
         public IEnumerable<StoreDto> GetStores()
         {
-            return _dbRetail.Stores
+            return CreateDbContext().Stores
                 .ProjectTo<StoreDto>(AutoMap.Configuration)
                 .ToList();
         }

@@ -39,7 +39,7 @@ namespace Retail.Data.SqlDb.Tests.CustomerServices
         {
             TestInitialize();
             _unitOfWork = new RetailUnitOfWork(_attachedDatabase);
-            _repo = new CustomerRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
+            _repo = new CustomerRepository(_unitOfWork);
         }
 
         [TestCleanup]

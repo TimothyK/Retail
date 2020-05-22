@@ -4,21 +4,24 @@ using Retail.Data.SqlDb.EfModels;
 using Retail.Data.SqlDb.Utilities;
 using System;
 using System.Linq;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.CustomerServices
 {
     public class CustomerRepository : ICustomerRepository
     {
-        private readonly RetailDbContext _dbRetail;
+        private readonly UnitOfWork _unitOfWork;
 
-        public CustomerRepository(RetailDbContext dbRetail)
+        public CustomerRepository(UnitOfWork unitOfWork)
         {
-            _dbRetail = dbRetail;
+            _unitOfWork = unitOfWork;
         }
+
+        private RetailDbContext CreateDbContext() => _unitOfWork.CreateDbContext<RetailDbContext>();
 
         public CustomerDto GetCustomerByMembershipNumber(Guid membershipNumber)
         {
-            return _dbRetail.Customers
+            return CreateDbContext().Customers
                 .Where(customer => customer.MembershipNumber == membershipNumber)
                 .ProjectTo<CustomerDto>(AutoMap.Configuration)
                 .SingleOrDefault();

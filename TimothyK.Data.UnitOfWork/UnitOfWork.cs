@@ -11,7 +11,7 @@ namespace TimothyK.Data.UnitOfWork
         #region Database Connection
 
         protected DbConnection DbConnection { get; private set; }
-        protected DbTransaction DbTransaction { get; private set; }
+        public DbTransaction DbTransaction { get; private set; }
 
         public virtual TContext CreateDbContext<TContext>() where TContext : DbContext
         {

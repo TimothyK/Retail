@@ -41,7 +41,7 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
         {
             TestInitialize();
             _unitOfWork = new RetailUnitOfWork(_attachedDatabase);
-            _repo = new OrderRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
+            _repo = new OrderRepository(_unitOfWork);
         }
 
         [TestCleanup]
@@ -59,8 +59,8 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
             //Arrange
             Store store;
             Product product;
-            using (var db = _unitOfWork.CreateDbContext<RetailDbContext>()) 
-            { 
+            {
+                var db = _unitOfWork.CreateDbContext<RetailDbContext>();            
                 store = db.CreateStore();
                 product = db.CreateProduct()
                     .AddInventory(store, 100);
@@ -71,8 +71,8 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
             _repo.DecrementProductInventory((ProductIdentifier)product, (StoreIdentifier)store, 20);
 
             //Assert
-            using (var db = _unitOfWork.CreateDbContext<RetailDbContext>())
             {
+                var db = _unitOfWork.CreateDbContext<RetailDbContext>();
                 var inventory = db.Inventories
                     .Single(inventory => inventory.ProductId == product.ProductId && inventory.StoreId == store.StoreId);
                 inventory.Quantity.ShouldBe(80);

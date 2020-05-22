@@ -43,7 +43,7 @@ namespace Retail.Data.SqlDb.Tests.OrderCreation
         {
             TestInitialize();
             _unitOfWork = new RetailUnitOfWork(_attachedDatabase); 
-            _repo = new OrderRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
+            _repo = new OrderRepository(_unitOfWork);
 
             CreateTestData();
         }

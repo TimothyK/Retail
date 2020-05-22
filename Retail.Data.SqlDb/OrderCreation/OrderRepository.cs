@@ -9,33 +9,37 @@ using Retail.Data.SqlDb.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TimothyK.Data.UnitOfWork;
 
 namespace Retail.Data.SqlDb.OrderCreation
 {
     public class OrderRepository : IOrderRepository
     {
-        private readonly RetailDbContext _dbRetail;
+        private readonly UnitOfWork _unitOfWork;
 
-        public OrderRepository(RetailDbContext dbRetail)
+        public OrderRepository(UnitOfWork unitOfWork)
         {
-            _dbRetail = dbRetail;
+            _unitOfWork = unitOfWork;
         }
+
+        private RetailDbContext CreateDbContext() => _unitOfWork.CreateDbContext<RetailDbContext>();
 
         public void CreateOrder(OrderDto order)
         {
+            var db = CreateDbContext();
             var entity = AutoMap.Mapper.Map<Order>(order);
-            _dbRetail.Orders.Add(entity);
-            _dbRetail.SaveChanges();
+            db.Orders.Add(entity);
+            db.SaveChanges();
         }
 
         public void DecrementProductInventory(IProductIdentifier product, IStoreIdentifier store, int quantity)
         {
-            _dbRetail.Database.ExecuteSqlInterpolated($"Update dbo.Inventory Set Quantity = Quantity - {quantity} Where (ProductId = {product.ProductId}) And (StoreId = {store.StoreId})");
+            CreateDbContext().Database.ExecuteSqlInterpolated($"Update dbo.Inventory Set Quantity = Quantity - {quantity} Where (ProductId = {product.ProductId}) And (StoreId = {store.StoreId})");
         }
 
         public IEnumerable<ProductDto> GetAvailableProducts(IStoreIdentifier store)
         {
-            var transaction = _dbRetail.Database.CurrentTransaction.GetDbTransaction();
+            var transaction = _unitOfWork.DbTransaction;
             var parameters = new { store.StoreId };
             var products = transaction
                 .Query<ProductDto>("Select product.ProductId" +
@@ -55,7 +59,7 @@ namespace Retail.Data.SqlDb.OrderCreation
 
         public double GetCustomerDiscount(ICustomerIdentifier customer)
         {
-            return _dbRetail.Customers.AsNoTracking()
+            return CreateDbContext().Customers.AsNoTracking()
                 .SingleOrDefault(cust => cust.CustomerId == customer.CustomerId)
                 ?.Discount 
                 ?? throw new CustomerNotFoundException(customer);
