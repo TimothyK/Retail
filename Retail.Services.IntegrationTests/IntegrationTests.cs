@@ -76,11 +76,9 @@ namespace Retail.Services.IntegrationTests
             }
 
             {//Act
-                var db = _unitOfWork.CreateDbContext<RetailDbContext>();
-
-                var storeLocator = new StoreLocatorService(new StoreRepository(db));
-                var customerService = new CustomerService(new CustomerRepository(db));
-                var orderService = new OrderCreationService(new OrderRepository(db));
+                var storeLocator = new StoreLocatorService(new StoreRepository(_unitOfWork));
+                var customerService = new CustomerService(new CustomerRepository(_unitOfWork));
+                var orderService = new OrderCreationService(new OrderRepository(_unitOfWork));
 
                 var store = storeLocator.GetStoreById(storeId);
                 var customer = customerService.GetCustomerByMembershipNumber(membershipNumber);

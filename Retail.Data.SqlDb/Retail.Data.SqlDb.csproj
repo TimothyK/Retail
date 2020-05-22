@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Retail.Data.Abstractions\Retail.Data.Abstractions.csproj" />
     <ProjectReference Include="..\Retail.Data.SqlDb.EfModels\Retail.Data.SqlDb.EfModels.csproj" />
+    <ProjectReference Include="..\TimothyK.Data.UnitOfWork\TimothyK.Data.UnitOfWork.csproj" />
   </ItemGroup>
 
 </Project>

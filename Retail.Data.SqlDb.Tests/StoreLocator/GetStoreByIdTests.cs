@@ -37,7 +37,7 @@ namespace Retail.Data.SqlDb.Tests.StoreLocator
         {
             TestInitialize();
             _unitOfWork = new RetailUnitOfWork(_attachedDatabase);
-            _repo = new StoreRepository(_unitOfWork.CreateDbContext<RetailDbContext>());
+            _repo = new StoreRepository(_unitOfWork);
         }
 
         [TestCleanup]
