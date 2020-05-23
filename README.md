@@ -111,7 +111,7 @@ Another advantage of this UnitOfWork implementation is that it controls which DB
 ## Retail.Services.IntegrationTests
 This project contains a [small number](https://martinfowler.com/bliki/TestPyramid.html "Test Pyramid") (currently one) integration test.  It ties the Retail.Service, Retail.Data.SqlDb, and Retail.Data.SqlDb.Database layers together to make sure that all these layers align properly when put together.
 
-#Further Reading
+# Further Reading
 * [Domain Driven Design](https://dddcommunity.org/book/evans_2003/), Eric Evans
 * [Patterns of Enterprise Application Architecture](https://martinfowler.com/books/eaa.html), Martin Fowler
 * [TDD is dead. Long Live testing.](https://dhh.dk/2014/tdd-is-dead-long-live-testing.html), David Heinemeier Hansson
