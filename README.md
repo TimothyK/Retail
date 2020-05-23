@@ -14,6 +14,18 @@ As I stated in the blog post, there is no one right way to design all software s
 * Serilog, with Console and Seq sinks
 
 # Project Overview
+
+* [Retail.Services](README.md#retailservices)
+* [Retail.Data.Abstractions](README.md#retaildataabstractions)
+* [Retail.Services.UnitTests](README.md#retailservicesunittests)
+* [Retail.Data.SqlDb](README.md#retaildatasqldb)
+* [Retail.Data.SqlDb.EfModels](README.md#retaildatasqldbefmodels)
+* [Retail.Data.SqlDb.Tests](README.md#retaildatasqldbtests)
+* [Retail.Data.SqlDb.TestRecordFactory](README.md#retaildatasqldbtestrecordfactory)
+* [Retail.Data.SqlDb.Database](README.md#retaildatasqldbdatabase)
+* [TimothyK.Data.UnitOfWork](README.md#timothykdataunitofwork)
+* [Retail.Services.IntegrationTests](README.md#retailservicesintegrationtests)
+
 ## Retail.Services
 This is the primary project for the Business layer.
 
