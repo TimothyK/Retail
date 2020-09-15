@@ -1,5 +1,5 @@
 # Overview
-This git repository is a working example of a fully separated Business and Data layer, using EF Core and SQL Server as the data layer.  This repo is a companion to my blog post [The 17-Layered App](http://geekswithblogs.net/TimothyK/archive/2019/07/30/the-17-layered-app.aspx).  This solution only has the Business and Data layers, no UI layers.  So that's one of the reasons it is only 10 projects and not 17.
+This git repository is a working example of a fully separated Business and Data layer, using EF Core and SQL Server as the data layer.  This repo is a companion to my blog post [The 17-Layered App](https://timothyk.github.io/blog/2019/LayeredApp/Seventeen/).  This solution only has the Business and Data layers, no UI layers.  So that's one of the reasons it is only 10 projects and not 17.
 
 As I stated in the blog post, there is no one right way to design all software solutions.  The code in this repo is not meant to be a gold standard that should be used as a template for every project.  This code is an example of how Business and Data layers can be written and have them completely separate from each other, and fully tested.  This is meant to be the start of a discussion.  From this example, please discuss what is good or bad about it.
 
@@ -129,3 +129,4 @@ This project contains a [small number](https://martinfowler.com/bliki/TestPyrami
 * [TDD is dead. Long Live testing.](https://dhh.dk/2014/tdd-is-dead-long-live-testing.html), David Heinemeier Hansson
   * and the fallout dicussion with Martin Fowler and Kent Beck on YouTube, [Part 1](https://www.youtube.com/watch?v=z9quxZsLcfo) of 5
 * [Using the Repository and Unit Of Work Pattern in .net core](https://garywoodfine.com/generic-repository-pattern-net-core/), Gary Woodfine
+* and again, the accompanying blog post: [The 17-Layered App](https://timothyk.github.io/blog/2019/LayeredApp/Seventeen/)
